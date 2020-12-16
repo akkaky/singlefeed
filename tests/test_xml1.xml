@@ -1,0 +1,112 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/"
+     xmlns:atom="http://www.w3.org/2005/Atom"
+     xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
+    <channel>
+        <title>
+            Особое мнение (звук) | Эхо Москвы
+        </title>
+        <link>https://echo.msk.ru/programs/personalno/</link>
+        <atom:link
+                href="https://echo.msk.ru/programs/personalno/rss-audio.xml"
+                rel="self"
+                type="application/rss+xml"
+        />
+        <description>
+            Особое мнение (звук) на Эхе Москвы.
+        </description>
+        <image>
+            <title>Особое мнение (звук) | Эхо Москвы</title>
+            <link>https://echo.msk.ru/programs/personalno/</link>
+            <url>https://echo.msk.ru/att/element-13073-picture-165.jpg</url>
+            <width>100</width>
+            <height>67</height>
+        </image>
+        <managingEditor>info@echo.msk.ru (Эхо Москвы)</managingEditor>
+        <language>ru-ru</language>
+        <copyright></copyright>
+        <lastBuildDate>Wed, 16 Dec 2020 11:21:26 +0300</lastBuildDate>
+        <docs>http://blogs.law.harvard.edu/tech/rss</docs>
+        <itunes:explicit>No</itunes:explicit>
+        <itunes:owner>
+            <itunes:name>Эхо Москвы</itunes:name>
+            <itunes:email>info@echo.msk.ru</itunes:email>
+        </itunes:owner>
+        <itunes:category text="Politics">
+            <itunes:category text="News"/>
+        </itunes:category>
+        <ttl>1440</ttl>
+        <item>
+            <title>
+                Особое мнение : Дмитрий Быков
+            </title>
+            <link>https://echo.msk.ru/programs/personalno/2757888-echo/</link>
+            <description>
+                &lt;img align=&quot;left&quot; width=&quot;50&quot; height=&quot;50&quot;
+                alt=&quot;&quot; title=&quot;&quot; src=&quot;https://echo.msk.ru/files/avatar_s/3288161.jpg&quot;
+                /&gt;
+                &lt;p&gt;Гости:
+
+                &lt;a href=&quot;https://echo.msk.ru/guests/13449/&quot;&gt;Дмитрий
+                Быков&lt;/a&gt;
+                &lt;/p&gt;
+                &lt;p&gt;Ведущие:
+
+                &lt;a href=&quot;https://echo.msk.ru/contributors/814212-echo/&quot;&gt;Нино
+                Росебашвили&lt;/a&gt;
+                &lt;/p&gt;
+                &lt;p&gt;Будущий год будет годом критически важных огромных
+                запретов. Система, в конце концов, запретит себе дышать. То
+                есть нам ничего делать не надо: они все сделают сами…&lt;/p&gt;
+
+            </description>
+            <author>info@echo.msk.ru (Эхо Москвы)</author>
+            <guid>
+                http://cdn.echo.msk.ru/snd/2020-12-15-osoboe-1908-3364520.mp3
+            </guid>
+            <enclosure
+                    url="http://cdn.echo.msk.ru/snd/2020-12-15-osoboe-1908-3364520.mp3"
+                    length="23810176" type="audio/mpeg"/>
+            <itunes:duration>34:57</itunes:duration>
+            <itunes:explicit>No</itunes:explicit>
+            <pubDate>Tue, 15 Dec 2020 19:08:00 +0300</pubDate>
+        </item>
+
+        <item>
+            <title>
+                Особое мнение : Сергей Алексашенко
+            </title>
+            <link>https://echo.msk.ru/programs/personalno/2757884-echo/</link>
+            <description>
+                &lt;img align=&quot;left&quot; width=&quot;50&quot; height=&quot;50&quot;
+                alt=&quot;&quot; title=&quot;&quot; src=&quot;https://echo.msk.ru/files/avatar_s/2816280.jpg&quot;
+                /&gt;
+                &lt;p&gt;Гости:
+
+                &lt;a href=&quot;https://echo.msk.ru/guests/293/&quot;&gt;Сергей
+                Алексашенко&lt;/a&gt;
+                &lt;/p&gt;
+                &lt;p&gt;Ведущие:
+
+                &lt;a href=&quot;https://echo.msk.ru/contributors/814212-echo/&quot;&gt;Нино
+                Росебашвили&lt;/a&gt;
+                &lt;/p&gt;
+                &lt;p&gt;Трамп политик, его задача – иметь политическую
+                поддержку. Любой ценой. Не нарушая закон. Он у своих
+                избирателей, большой жирный минус, но он у них посеял сомнения
+                в качестве американской демократии…&lt;/p&gt;
+
+            </description>
+            <author>info@echo.msk.ru (Эхо Москвы)</author>
+            <guid>
+                http://cdn.echo.msk.ru/snd/2020-12-15-osoboe-1708-3364452.mp3
+            </guid>
+            <enclosure
+                    url="http://cdn.echo.msk.ru/snd/2020-12-15-osoboe-1708-3364452.mp3"
+                    length="24066176" type="audio/mpeg"/>
+            <itunes:duration>34:32</itunes:duration>
+            <itunes:explicit>No</itunes:explicit>
+            <pubDate>Tue, 15 Dec 2020 17:08:00 +0300</pubDate>
+        </item>
+    </channel>
+</rss>

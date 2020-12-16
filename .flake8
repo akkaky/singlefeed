@@ -1,0 +1,19 @@
+[flake8]
+## Common settings:
+exclude =
+    .venv/,
+
+statistics = True
+max-line-length = 79
+
+ignore =
+    ### flake8-docstrings
+    # Missing docstrings
+    D1,
+
+## flake8-import-order
+import-order-style = google
+
+## flake8-quotes
+inline-quotes = single
+multiline-quotes = double
