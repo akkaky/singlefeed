@@ -10,8 +10,8 @@ Parses the RSS file and returns a list of the attributes of each episode:
     'image'
     'author'
 """
-from datetime import datetime
 import requests
+from datetime import datetime
 from lxml import etree
 
 namespaces = {

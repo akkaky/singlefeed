@@ -1,6 +1,5 @@
 from unittest import TestCase
 
-from parser import _get_episodes
 from parser import _normalize_published
 
 

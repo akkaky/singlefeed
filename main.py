@@ -1,4 +1,3 @@
-import requests
 import yaml
 
 from parser import parse_feed
@@ -29,9 +28,6 @@ def main():
     create_storage(feed_list)
     for feed in feed_list:
         create_rss(feed)
-
-
-
 
 
 if __name__ == '__main__':
