@@ -1,9 +1,17 @@
 """Parser RSS.
 
-Parse XML, return a list of series with the required tags.
+Parses the RSS file and returns a list of the attributes of each episode:
+    'title'
+    'enclosure'
+    'link'
+    'published'
+    'description'
+    'duration'
+    'image'
+    'author'
 """
 from datetime import datetime
-from operator import itemgetter
+import requests
 from lxml import etree
 
 namespaces = {
@@ -12,94 +20,97 @@ namespaces = {
 }
 
 
-class ParserFeed:
-    def __init__(self, *content):
-        self.feeds = list()
-        for req in content:
-            self.feeds.extend(self._get_items(etree.XML(req.encode('utf-8'))))
-        self.feeds.sort(key=itemgetter('published'), reverse=True),
-        self.rss = None
+def _parse_title(item):
+    if item.find('title') is None:
+        return None
+    return item.find('title').text.strip()
 
-    @staticmethod
-    def _get_date_obj(date_string):
-        return datetime.strptime(date_string, '%a, %d %b %Y %H:%M:%S %z')
 
-    @staticmethod
-    def _get_item(item, image, author):
-        return {
-            'title': item.find('title').text.strip(),
-            'enclosure': item.find('enclosure').attrib,
-            'link': item.find('link').text,
-            'published': ParserFeed._get_date_obj(
-                item.find('pubDate').text.strip()
-            ),
-            'description': item.find('description').text.strip(),
-            'duration': item.find('itunes:duration', namespaces).text,
-            'image': image,
-            'author': author or item.find('author').text,
-        }
+def _parse_enclosure(item):
+    if item.find('enclosure') is None:
+        return None
+    return dict(item.find('enclosure').attrib)
 
-    def _get_items(self, feed):
-        self.image = str(*feed.xpath('//channel/image/url/text()'))
-        self.author = str(
-            *feed.xpath(
-                '//channel/itunes:author/text()', namespaces=namespaces,
-            )
-        )
-        return [
-            self._get_item(item, self.image, self.author) for item in
-            feed.iter('item')
-        ]
 
-    def get_feeds_dict(self):
-        """
-        This method just for test now
-        """
-        return self.feeds
+def _parse_link(item):
+    if item.find('link') is None:
+        return str(*item.xpath('/rss/channel/link/text()'))
+    return item.find('link').text
 
-    def get_rss(self, title='Your fees name', description='Your description'):
-        """!!!should be separated into functions!!!"""
-        rss = etree.Element('rss', nsmap={'itunes': namespaces['itunes']})
-        channel = etree.SubElement(rss, 'channel')
-        feed_title = etree.SubElement(channel, 'title')
-        feed_title.text = title
-        explicit = etree.SubElement(
-            channel, f"{{{namespaces['itunes']}}}explicit"
-        )
-        explicit.text = 'no'
-        feed_description = etree.SubElement(channel, 'description')
-        feed_description.text = description
-        for episode in self.feeds:
-            item = etree.SubElement(channel, 'item')
-            item_title = etree.SubElement(item, 'title')
-            item_title.text = episode['title']
-            enclosure = etree.SubElement(item, 'enclosure')
-            for key, value in episode['enclosure'].items():
-                enclosure.set(key, value)
-            duration = etree.SubElement(
-                item, f"{{{namespaces['itunes']}}}duration"
-            )
-            explicit = etree.SubElement(
-                item, f"{{{namespaces['itunes']}}}explicit",
-            )
-            explicit.text = 'no'
-            duration.text = episode['duration']
-            link = etree.SubElement(item, 'link')
-            link.text = episode['link']
-            guid = etree.SubElement(item, 'guid')
-            guid.text = episode['link']
-            item_description = etree.SubElement(item, 'description')
-            item_description.text = episode['description']
-            pub_date = etree.SubElement(item, 'pubDate')
-            pub_date.text = datetime.strftime(
-                episode['published'], '%a, %d %b %Y %H:%M:%S %z'
-            )
-            image = etree.SubElement(item, 'image')
-            image.text = episode['image']
-            author = etree.SubElement(item, 'author')
-            author.text = episode['author']
-        tree = etree.ElementTree(rss)
-        tree.write(
-            'rss.xml', xml_declaration=True, encoding='utf-8', method="xml",
-            pretty_print=True,
-        )
+
+def _normalize_published(published):
+    time_zones = {
+        'EST': '-0500',
+        'PDT': '-0700',
+        'PST': '-0800',
+    }
+    time_zone = published.rsplit(' ', 1)[-1]
+    if time_zone in time_zones:
+        return published.replace(time_zone, time_zones[time_zone])
+    return published
+
+
+def _get_date_obj(item):
+    if item.find('pubDate') is None:
+        return None
+    published = _normalize_published(item.find('pubDate').text.strip())
+    return datetime.strptime(published, '%a, %d %b %Y %H:%M:%S %z')
+
+
+def _parse_description(item):
+    if item.find('description') is None:
+        return None
+    return item.find('description').text.strip()
+
+
+def _parse_duration(item):
+    if item.find('itunes:duration', namespaces) is None:
+        return None
+    return item.find('itunes:duration', namespaces).text
+
+
+def _parse_image(item):
+    if item.find('itunes:image', namespaces) is not None:
+        return item.find('itunes:image', namespaces).attrib['href']
+    return str(*item.xpath('/rss/channel/image/url/text()'))
+
+
+def _parse_author(item):
+    return str(
+        *item.xpath(
+            '/rss/channel/itunes:author/text()', namespaces=namespaces,
+        ),
+    ) or item.find('author').text
+
+
+def _parse_episode(item):
+    return {
+        'title': _parse_title(item),
+        'enclosure': _parse_enclosure(item),
+        'link': _parse_link(item),
+        'published': _get_date_obj(item),
+        'description': _parse_description(item),
+        'duration': _parse_duration(item),
+        'image': _parse_image(item),
+        'author': _parse_author(item),
+    }
+
+
+def _get_episodes(feed):
+    feed = etree.XML(feed.encode('utf-8'))
+    feed = [_parse_episode(item) for item in feed.iter('item')]
+    if feed is None:
+        print("Can't parse feed")
+    return feed
+
+
+def parse_feed(feed):
+    title = feed.get('title')
+    link = feed.get('link')
+    language = feed.get('language')
+    description = feed.get('description')
+    image = feed.get('image')
+    episodes_list = []
+    for url in feed.get('sources'):
+        episodes_list.extend(_get_episodes(requests.get(url).text))
+    return title, link, language, description, image, episodes_list

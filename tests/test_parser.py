@@ -1,14 +1,12 @@
 from unittest import TestCase
 
-from parser import ParserFeed
+from parser import _get_episodes
+from parser import _normalize_published
 
 
-class ParserFeedTestCase(TestCase):
+class ParserTestCase(TestCase):
 
-    def test__get_feed_dict(self):
-        with open('tests/test_xml1.xml') as test_xml1, \
-                open('tests/test_xml2.xml') as test_xml2, \
-                open('tests/expected_result.txt') as file:
-            parser = ParserFeed(test_xml1.read(), test_xml2.read())
-            expected_result = file.read().strip()
-            self.assertEqual(expected_result, str(parser.get_feeds_dict()))
+    def test__normalize_published__RFC1123__RFC1123Z(self):
+        input_data = 'Thu, 11 Apr 2019 15:37:31 EST'
+        output_data = 'Thu, 11 Apr 2019 15:37:31 -0500'
+        self.assertEqual(output_data, _normalize_published(input_data))
