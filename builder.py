@@ -1,11 +1,16 @@
 from lxml import etree
 
-from feed import Feed
 from parser import namespaces
 
 
-def create_rss(feed: Feed):
-    rss = etree.Element('rss', nsmap={'atom': namespaces['atom']})
+def create_rss(feed):
+    rss = etree.Element(
+        'rss',
+        nsmap={
+            'atom': namespaces['atom'],
+            'itunes': namespaces['itunes'],
+        }
+    )
     channel = etree.SubElement(rss, 'channel')
     feed_title = etree.SubElement(channel, 'title')
     feed_title.text = feed.title

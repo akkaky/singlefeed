@@ -1,19 +1,20 @@
 import yaml
+from time import sleep
 
-from parser import parse_feed
+from parser import create_feed
 from feed import Feed
-from builder import create_rss
+from feed import json_load
 
 
 def get_settings():
     with open('settings/settings.yaml') as s:
-        return yaml.load(s, Loader=yaml.BaseLoader)
+        return yaml.load(s, Loader=yaml.BaseLoader).values()
 
 
-def get_feed_list(feeds):
+def create_feeds(feeds):
     feeds_list = []
     for name, feed in feeds.items():
-        feeds_list.append(Feed(name, *parse_feed(feed)))
+        feeds_list.append(Feed(name, *create_feed(feed)))
     return feeds_list
 
 
@@ -23,11 +24,13 @@ def create_storage(feed_list):
 
 
 def main():
-    settings = get_settings()
-    feed_list = get_feed_list(settings['feeds'])
-    create_storage(feed_list)
-    for feed in feed_list:
-        create_rss(feed)
+    feeds, settings = get_settings()
+    feeds = create_feeds(feeds)
+    feeds.append(Feed(**json_load('storage/echo-msk.json')))
+    while True:
+        sleep(int(settings.get('timeout')))
+        for feed in feeds:
+            feed.check_update()
 
 
 if __name__ == '__main__':

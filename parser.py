@@ -96,21 +96,25 @@ def _parse_episode(item):
     }
 
 
-def _get_episodes(feed):
-    feed = etree.XML(feed.encode('utf-8'))
-    feed = [_parse_episode(item) for item in feed.iter('item')]
-    if feed is None:
-        print("Can't parse feed")
-    return feed
+def get_episodes(url):
+    feed = etree.XML(requests.get(url).text.encode('utf-8'))
+    for item in feed.iter('item'):
+        yield _parse_episode(item)
 
 
-def parse_feed(feed):
+def create_feed(feed):
     title = feed.get('title')
     link = feed.get('link')
     language = feed.get('language')
     description = feed.get('description')
     image = feed.get('image')
-    episodes_list = []
-    for url in feed.get('sources'):
-        episodes_list.extend(_get_episodes(requests.get(url).text))
-    return title, link, language, description, image, episodes_list
+    sources = feed.get('sources')
+    return title, link, language, description, image, sources
+
+
+def get_last_build_date(url):
+    feed = etree.XML(requests.get(url).text.encode('utf-8'))
+    last_build_date = _normalize_published(
+        str(*feed.xpath('/rss/channel/lastBuildDate/text()'))
+    )
+    return datetime.strptime(last_build_date, '%a, %d %b %Y %H:%M:%S %z')
