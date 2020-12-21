@@ -26,7 +26,7 @@ def create_storage(feed_list):
 def main():
     feeds, settings = get_settings()
     feeds = create_feeds(feeds)
-    feeds.append(Feed(**json_load('storage/echo-msk.json')))
+    #feeds.append(Feed(**json_load('storage/echo-msk.json')))
     while True:
         sleep(int(settings.get('timeout')))
         for feed in feeds:
