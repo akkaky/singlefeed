@@ -85,7 +85,7 @@ def main():
     feeds, settings = get_config()
     feeds = create_feeds(feeds)
     for feed in feeds:
-        json_file_name = f'storage/{feed.name}.json'
+        json_file_name = f'{feed.name}.json'
         if os.path.isfile(json_file_name):
             json_data = json_load(json_file_name)
             feed.episodes = [
@@ -99,7 +99,7 @@ def main():
         for feed in feeds:
             if check_update(feed):
                 json_dump(feed)
-                with open(f'rss/{feed.name}_rss.xml', 'wb') as file:
+                with open(f'{feed.name}_rss.xml', 'wb') as file:
                     file.write(create_rss(feed))
 
         sleep(int(settings['timeout']))

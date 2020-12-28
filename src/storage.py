@@ -9,6 +9,6 @@ def json_load(file_name: str) -> dict:
 
 
 def json_dump(feed: Feed):
-    with open(f'storage/{feed.name}.json', 'w') as file:
+    with open(f'{feed.name}.json', 'w') as file:
         json.dump(feed, file, cls=FeedEpisodeEncoder, indent=4)
         print(f'"{feed.name}.json" file created')

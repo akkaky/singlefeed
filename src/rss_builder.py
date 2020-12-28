@@ -55,8 +55,8 @@ def create_rss(feed):
             item, f"{{{namespaces['itunes']}}}explicit",
         )
         explicit.text = 'no'
-        image = etree.SubElement(item, 'image')
-        image.text = episode.image
+        image = etree.SubElement(item, f"{{{namespaces['itunes']}}}image")
+        image.set('href', episode.image)
         author = etree.SubElement(item, 'author')
         author.text = episode.author
     return etree.tostring(
