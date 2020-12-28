@@ -1,6 +1,6 @@
 from lxml import etree
 
-from parser import namespaces
+from .parser import namespaces
 
 
 def create_rss(feed):
@@ -23,9 +23,7 @@ def create_rss(feed):
     feed_description = etree.SubElement(channel, 'description')
     feed_description.text = feed.description
     last_build_date = etree.SubElement(channel, 'last_build_date')
-    last_build_date.text = feed.last_build_date.strftime(
-        '%a, %d %b %Y %H:%M:%S %z',
-    )
+    last_build_date.text = feed.last_build_date
     image = etree.SubElement(channel, 'image')
     image.text = feed.image
     author = etree.SubElement(
@@ -45,9 +43,7 @@ def create_rss(feed):
         guid = etree.SubElement(item, 'guid')
         guid.text = episode.link
         pub_date = etree.SubElement(item, 'pubDate')
-        pub_date.text = episode.published.strftime(
-            '%a, %d %b %Y %H:%M:%S %z',
-        )
+        pub_date.text = episode.published
         item_description = etree.SubElement(item, 'description')
         item_description.text = episode.description
         if episode.duration:
@@ -63,8 +59,7 @@ def create_rss(feed):
         image.text = episode.image
         author = etree.SubElement(item, 'author')
         author.text = episode.author
-    tree = etree.ElementTree(rss)
-    tree.write(
-        f'rss/{feed.name}_rss.xml', xml_declaration=True, encoding='utf-8',
-        method="xml", pretty_print=True,
+    return etree.tostring(
+        rss, xml_declaration=True, encoding='utf-8', method="xml",
+        pretty_print=True
     )

@@ -10,9 +10,10 @@ Parses the RSS file and returns a list of the attributes of each episode:
     'image'
     'author'
 """
-import requests
-from datetime import datetime
 from lxml import etree
+
+from .date_normalize import normalize_timezone
+
 
 namespaces = {
     'itunes': 'http://www.itunes.com/dtds/podcast-1.0.dtd',
@@ -38,23 +39,10 @@ def _parse_link(item):
     return item.find('link').text
 
 
-def _normalize_published(published):
-    time_zones = {
-        'EST': '-0500',
-        'PDT': '-0700',
-        'PST': '-0800',
-    }
-    time_zone = published.rsplit(' ', 1)[-1]
-    if time_zone in time_zones:
-        return published.replace(time_zone, time_zones[time_zone])
-    return published
-
-
-def _get_date_obj(item):
+def _parse_published(item):
     if item.find('pubDate') is None:
         return None
-    published = _normalize_published(item.find('pubDate').text.strip())
-    return datetime.strptime(published, '%a, %d %b %Y %H:%M:%S %z')
+    return normalize_timezone(item.find('pubDate').text.strip())
 
 
 def _parse_description(item):
@@ -88,7 +76,7 @@ def _parse_episode(item):
         'title': _parse_title(item),
         'enclosure': _parse_enclosure(item),
         'link': _parse_link(item),
-        'published': _get_date_obj(item),
+        'published': _parse_published(item),
         'description': _parse_description(item),
         'duration': _parse_duration(item),
         'image': _parse_image(item),
@@ -96,25 +84,12 @@ def _parse_episode(item):
     }
 
 
-def get_episodes(url):
-    feed = etree.XML(requests.get(url).text.encode('utf-8'))
+def get_episodes(rss_str: str) -> dict:
+    feed = etree.XML(rss_str.encode('utf-8'))
     for item in feed.iter('item'):
         yield _parse_episode(item)
 
 
-def create_feed(feed):
-    title = feed.get('title')
-    link = feed.get('link')
-    language = feed.get('language')
-    description = feed.get('description')
-    image = feed.get('image')
-    sources = feed.get('sources')
-    return title, link, language, description, image, sources
-
-
-def get_last_build_date(url):
-    feed = etree.XML(requests.get(url).text.encode('utf-8'))
-    last_build_date = _normalize_published(
-        str(*feed.xpath('/rss/channel/lastBuildDate/text()'))
-    )
-    return datetime.strptime(last_build_date, '%a, %d %b %Y %H:%M:%S %z')
+def get_last_build_date(rss_str: str) -> str:
+    feed = etree.XML(rss_str.encode('utf-8'))
+    return str(*feed.xpath('/rss/channel/lastBuildDate/text()'))
