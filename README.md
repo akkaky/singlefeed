@@ -8,7 +8,7 @@ Make your unique podcast RSS feed from several feeds and publish it. It is possi
 
 ## Web Server
 
-- Publish RSS
+- Publish RSS at: `http://example.com/rss/{your_feed name}`
 - Automatically updates RSS when new podcast episodes are available.
 
 ## WebUI
