@@ -19,7 +19,7 @@ def get_config() -> dict:
         return yaml.load(s, Loader=yaml.BaseLoader).values()
 
 
-def get_feed_attr_values(feed: dict) -> tuple[str]:
+def get_feed_attr_values(feed: dict) -> tuple[str, str, str, str, str, str]:
     title = feed.get('title')
     link = feed.get('link')
     language = feed.get('language')
