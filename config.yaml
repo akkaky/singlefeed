@@ -18,6 +18,7 @@ feeds:
       - http://www.echo.msk.ru/programs/graniweek/rss-audio.xml
       - http://www.echo.msk.ru/programs/tochka/rss-audio.xml
       - http://echo.msk.ru/programs/personalnovash/rss-audio.xml
+      - http://www.echo.msk.ru/programs/code/rss-audio.xml
 
 settings:
-  timeout: 60
+  timeout: 30

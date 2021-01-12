@@ -5,7 +5,13 @@ DATE_FORMAT = '%a, %d %b %Y %H:%M:%S %z'
 
 
 def string_to_datetime(string: str) -> datetime:
-    return datetime.strptime(string, DATE_FORMAT)
+    if string:
+        return datetime.strptime(string, DATE_FORMAT)
+
+
+def datetime_to_string(date: datetime) -> str:
+    if date:
+        return date.strftime(DATE_FORMAT)
 
 
 def normalize_timezone(date_: str) -> str:

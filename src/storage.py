@@ -1,6 +1,87 @@
 import json
+import sqlite3
 
-from .feed import Feed, FeedEpisodeEncoder
+from .container import Episode, Feed, FeedEpisodeJsonEncoder, create_episode
+
+DATA_BASE = 'singlefeed.db'
+FEED_ATTRIBUTES = ', '.join(list(Feed.__dict__['__dataclass_fields__'])[:-1])
+EPISODE_ATTRIBUTES = (
+    f'feed_name, {", ".join(Episode.__dict__["__dataclass_fields__"])}'
+)
+
+
+def create_connection():
+    try:
+        conn = sqlite3.connect(DATA_BASE)
+    except sqlite3.Error as error:
+        print(error)
+    return conn
+
+
+def drop_tables(cur: sqlite3.Cursor):
+    for table_name in ('feeds', 'episodes'):
+        cur.execute(f'DROP TABLE IF EXISTS {table_name}')
+
+
+def create():
+    with create_connection() as conn:
+        cur = conn.cursor()
+        drop_tables(cur)
+        cur.execute(
+            f'CREATE TABLE feeds({FEED_ATTRIBUTES})'
+        )
+        cur.execute(
+            f'CREATE TABLE episodes({EPISODE_ATTRIBUTES})'
+        )
+
+
+def add_feed(feed: Feed):
+    with create_connection() as conn:
+        conn.execute(
+            f'INSERT INTO feeds VALUES ({",".join("?" * 8)})',
+            (*feed.get_attrs_values(),),
+        )
+
+
+def add_episodes(feed_name: str, episodes: list[Episode]):
+    with create_connection() as conn:
+        for episode in episodes:
+            conn.execute(
+                f'INSERT INTO episodes VALUES ({",".join("?" * 9)})',
+                (feed_name, *episode.get_attrs_values()),
+            )
+
+
+def get_feeds(name=None):
+    with create_connection() as conn:
+        if name:
+            feed = Feed(
+                *conn.execute(
+                    f'SELECT * FROM feeds WHERE name = "{name}"'
+                ).fetchone()
+            )
+            feed.episodes = get_episodes(feed.name, conn)
+            return feed
+        feeds = [Feed(*row) for row in conn.execute('SELECT * FROM feeds')]
+        for feed in feeds:
+            feed.episodes = get_episodes(feed.name, conn)
+        return feeds
+
+
+def get_episodes(feed_name, conn: sqlite3.Connection):
+    return [
+        create_episode(row[1:]) for row in conn.execute(
+            f'SELECT * FROM episodes WHERE feed_name = "{feed_name}"'
+        )
+    ]
+
+
+def update_last_build_date(feed: Feed):
+    with create_connection() as conn:
+        conn.execute(
+            f'UPDATE feeds SET last_build_date = "{feed.last_build_date}" '
+            f'WHERE name = "{feed.name}"'
+        )
 
 
 def json_load(file_name: str) -> dict:
@@ -10,5 +91,5 @@ def json_load(file_name: str) -> dict:
 
 def json_dump(feed: Feed):
     with open(f'{feed.name}.json', 'w') as file:
-        json.dump(feed, file, cls=FeedEpisodeEncoder, indent=4)
+        json.dump(feed, file, cls=FeedEpisodeJsonEncoder, indent=4)
         print(f'"{feed.name}.json" file created')

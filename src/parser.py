@@ -30,7 +30,11 @@ def _parse_title(item):
 def _parse_enclosure(item):
     if item.find('enclosure') is None:
         return None
-    return dict(item.find('enclosure').attrib)
+    enclosure = dict(item.find('enclosure').attrib)
+    length = enclosure.get('length')
+    type_ = enclosure.get('type')
+    url = enclosure.get('url')
+    return {'length': length, 'type': type_, 'url': url}
 
 
 def _parse_link(item):
@@ -60,7 +64,14 @@ def _parse_duration(item):
 def _parse_image(item):
     if item.find('itunes:image', namespaces) is not None:
         return item.find('itunes:image', namespaces).attrib['href']
-    return str(*item.xpath('/rss/channel/image/url/text()'))
+    return (
+        str(*item.xpath('/rss/channel/image/url/text()')) or
+        str(
+            *item.xpath(
+                '/rss/channel/itunes:image/@href', namespaces=namespaces,
+            )
+        )
+    )
 
 
 def _parse_author(item):

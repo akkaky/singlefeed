@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% block title %} {{ feed.title }} {% endblock %}</h1>
+    {% for episode in feed.episodes %}
+        <div>
+            <img src="{{ episode.image }}" width="60" height="60">
+        <p>{{ episode.title }}<br>
+            <audio controls><source src="{{ episode.enclosure['url'] }}" type="audio/mpeg"></audio>
+        </div>
+    <br>
+    {% endfor %}
+{% endblock %}

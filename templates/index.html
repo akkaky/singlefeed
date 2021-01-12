@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {% for feed in feeds %}
+    <a href="{{ url_for('feed_page', feed_name=feed.name) }}">
+        {{ feed.title }}
+    </a>
+    <br>
+    {% endfor %}
+{% endblock %}
