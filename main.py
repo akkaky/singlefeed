@@ -122,7 +122,7 @@ def rss(feed_name):
     return Response(create_rss(feed), mimetype='text/xml')
 
 
-def main():
+if __name__ == '__main__':
     settings = init()
     scheduler = BackgroundScheduler()
     scheduler.start()
@@ -130,7 +130,3 @@ def main():
         update_feeds, trigger="interval", seconds=int(settings.get('timeout'))
     )
     app.run(threaded=True, port=5000)
-
-
-if __name__ == '__main__':
-    main()
