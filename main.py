@@ -99,6 +99,31 @@ def init():
     return settings
 
 
+<<<<<<< HEAD
+=======
+app = Flask(__name__)
+
+
+@app.route('/')
+def index():
+    feeds = storage.get_feeds()
+    return render_template('index.html', feeds=feeds)
+
+
+@app.route('/<feed_name>')
+def feed_page(feed_name):
+    feed = storage.get_feeds(feed_name)
+    sort_episodes(feed)
+    return render_template('feed_page.html', feed=feed)
+
+
+@app.route('/rss/<feed_name>')
+def rss(feed_name):
+    feed = storage.get_feeds(feed_name)
+    sort_episodes(feed)
+    return Response(create_rss(feed), mimetype='text/xml')
+
+>>>>>>> cc7defe0d08702798431e29fb9a9427a45c99cbc
 def main():
     app = Flask(__name__)
     settings = init()
@@ -107,6 +132,7 @@ def main():
     scheduler.add_job(
         update_feeds, trigger="interval", seconds=int(settings.get('timeout'))
     )
+<<<<<<< HEAD
 
     @app.route('/')
     def index():
@@ -127,6 +153,10 @@ def main():
 
     return app
 
+=======
+    app.run()
+    
+>>>>>>> cc7defe0d08702798431e29fb9a9427a45c99cbc
 
 if __name__ == '__main__':
     app = main()
