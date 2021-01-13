@@ -121,12 +121,15 @@ def rss(feed_name):
     sort_episodes(feed)
     return Response(create_rss(feed), mimetype='text/xml')
 
-
-if __name__ == '__main__':
+def main():
     settings = init()
     scheduler = BackgroundScheduler()
     scheduler.start()
     scheduler.add_job(
         update_feeds, trigger="interval", seconds=int(settings.get('timeout'))
     )
-    app.run(threaded=True, port=5000)
+    app.run()
+    
+
+if __name__ == '__main__':
+    main()
