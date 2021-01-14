@@ -57,7 +57,7 @@ def get_feeds(name=None):
     with create_connection() as conn:
         if name:
             feed = Feed(
-                conn.execute(
+                *conn.execute(
                     f'SELECT * FROM feeds WHERE name = "{name}"'
                 ).fetchone()
             )

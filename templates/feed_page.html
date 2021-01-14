@@ -2,12 +2,19 @@
 
 {% block content %}
     <h1>{% block title %} {{ feed.title }} {% endblock %}</h1>
+    <hr>
     {% for episode in feed.episodes %}
         <div>
-            <img src="{{ episode.image }}" width="60" height="60">
-        <p>{{ episode.title }}<br>
+            <p><img src="{{ episode.image }}" width="60" height="60"></p>
+            <p>
+            <h3>{{ episode.title }}</h3>
+                <details>
+                    <summary>Description</summary>
+                        <p>{{ episode.description|safe }}</p>
+                </details>
+            </p>
+                <span class="badge badge-primary">{{ episode.published }}</span><br>
             <audio controls><source src="{{ episode.enclosure.get('url') }}" type="audio/mpeg"></audio>
         </div>
-    <br>
     {% endfor %}
 {% endblock %}
