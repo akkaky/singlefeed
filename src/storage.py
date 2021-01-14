@@ -56,13 +56,13 @@ def add_episodes(feed_name: str, episodes: list[Episode]):
 def get_feeds(name=None):
     with create_connection() as conn:
         if name:
-            data = conn.execute(
+            feed = Feed(
+                conn.execute(
                     f'SELECT * FROM feeds WHERE name = "{name}"'
                 ).fetchone()
-            if data:
-                feed = Feed(*data)
-                feed.episodes = get_episodes(feed.name, conn)
-            return feed or None
+            )
+            feed.episodes = get_episodes(feed.name, conn)
+            return feed
         feeds = [Feed(*row) for row in conn.execute('SELECT * FROM feeds')]
         for feed in feeds:
             feed.episodes = get_episodes(feed.name, conn)
