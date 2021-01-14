@@ -59,9 +59,10 @@ def get_feeds(name=None):
             data = conn.execute(
                     f'SELECT * FROM feeds WHERE name = "{name}"'
                 ).fetchone()
-            feed = Feed(*data)
-            feed.episodes = get_episodes(feed.name, conn)
-            return feed
+            if data:
+                feed = Feed(*data)
+                feed.episodes = get_episodes(feed.name, conn)
+            return feed or None
         feeds = [Feed(*row) for row in conn.execute('SELECT * FROM feeds')]
         for feed in feeds:
             feed.episodes = get_episodes(feed.name, conn)
