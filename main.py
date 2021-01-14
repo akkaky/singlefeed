@@ -110,8 +110,8 @@ def main():
     )
 
 
-main()
 app = Flask(__name__)
+main()
 
 
 @app.route('/')
