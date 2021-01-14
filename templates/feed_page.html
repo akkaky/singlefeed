@@ -6,7 +6,7 @@
         <div>
             <img src="{{ episode.image }}" width="60" height="60">
         <p>{{ episode.title }}<br>
-            <audio controls><source src="{{ episode.enclosure['url'] }}" type="audio/mpeg"></audio>
+            <audio controls><source src="{{ episode.enclosure.get('url') }}" type="audio/mpeg"></audio>
         </div>
     <br>
     {% endfor %}
