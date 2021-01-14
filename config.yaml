@@ -21,4 +21,4 @@ feeds:
       - http://www.echo.msk.ru/programs/code/rss-audio.xml
 
 settings:
-  timeout: 30
+  timeout: 60
