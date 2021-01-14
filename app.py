@@ -26,3 +26,7 @@ def rss(feed_name):
     sort_episodes(feed)
     return Response(create_rss(feed), mimetype='text/xml')
 
+
+if __name__ == '__main__':
+    app.run()
+
