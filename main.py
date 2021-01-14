@@ -108,10 +108,10 @@ def main():
     scheduler.add_job(
         update_feeds, trigger="interval", seconds=int(settings.get('timeout'))
     )
-    return Flask(__name__)
 
 
-app = main()
+main()
+app = Flask(__name__)
 
 
 @app.route('/')
