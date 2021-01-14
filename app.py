@@ -1,6 +1,6 @@
 from flask import Flask, Response, render_template
 
-from main import sort_episodes
+from main import main, sort_episodes
 from src import storage
 from src.rss_builder import create_rss
 
@@ -25,6 +25,9 @@ def rss(feed_name):
     feed = storage.get_feeds(feed_name)
     sort_episodes(feed)
     return Response(create_rss(feed), mimetype='text/xml')
+
+
+main()
 
 
 if __name__ == '__main__':
