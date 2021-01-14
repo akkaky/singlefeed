@@ -1,1 +1,1 @@
-web: gunicorn "main:manager"
+web: gunicorn "main:app"

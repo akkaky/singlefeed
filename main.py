@@ -3,7 +3,8 @@ import requests
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, Response, render_template
-from flask_script import Manager, Server
+from flask_script import Manager, Server, Command, Option
+from gunicorn.app.base import Application
 
 from src import parser
 from src.container import Episode, Feed
@@ -107,16 +108,10 @@ def main():
     scheduler.add_job(
         update_feeds, trigger="interval", seconds=int(settings.get('timeout'))
     )
+    return Flask(__name__)
 
 
-app = Flask(__name__)
-manager = Manager(app)
-
-
-@manager.command
-def runserver():
-    main()
-    app.run()
+app = main()
 
 
 @app.route('/')
@@ -140,5 +135,5 @@ def rss(feed_name):
 
 
 if __name__ == '__main__':
-    manager.run()
+    app.run()
 
