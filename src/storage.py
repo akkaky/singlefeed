@@ -11,6 +11,7 @@ EPISODE_ATTRIBUTES = (
 
 
 def create_connection():
+    conn = None
     try:
         conn = sqlite3.connect(DATA_BASE)
     except sqlite3.Error as error:
@@ -18,19 +19,19 @@ def create_connection():
     return conn
 
 
-def drop_tables(cur: sqlite3.Cursor):
+def drop_tables(conn):
     for table_name in ('feeds', 'episodes'):
-        cur.execute(f'DROP TABLE IF EXISTS {table_name}')
+        conn.execute(f'DROP TABLE IF EXISTS {table_name}')
+        print(f'Table {table_name} dropped')
 
 
 def create():
     with create_connection() as conn:
-        cur = conn.cursor()
-        drop_tables(cur)
-        cur.execute(
+        drop_tables(conn)
+        conn.execute(
             f'CREATE TABLE feeds({FEED_ATTRIBUTES})'
         )
-        cur.execute(
+        conn.execute(
             f'CREATE TABLE episodes({EPISODE_ATTRIBUTES})'
         )
 
