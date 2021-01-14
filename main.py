@@ -129,8 +129,8 @@ def main():
     scheduler.add_job(
         update_feeds, trigger="interval", seconds=int(settings.get('timeout'))
     )
-    return app.run()
+    return app
 
 if __name__ == '__main__':
     main()
-
+    app.run()
