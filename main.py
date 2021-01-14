@@ -3,6 +3,7 @@ import requests
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, Response, render_template
+from flask_script import Manager, Server
 
 from src import parser
 from src.container import Episode, Feed
@@ -106,9 +107,38 @@ def main():
     scheduler.add_job(
         update_feeds, trigger="interval", seconds=int(settings.get('timeout'))
     )
-    while True:
-        pass
+
+
+app = Flask(__name__)
+manager = Manager(app)
+
+
+@manager.command
+def runserver():
+    main()
+    app.run()
+
+
+@app.route('/')
+def index():
+    feeds = storage.get_feeds()
+    return render_template('index.html', feeds=feeds)
+
+
+@app.route('/<feed_name>')
+def feed_page(feed_name):
+    feed = storage.get_feeds(feed_name)
+    sort_episodes(feed)
+    return render_template('feed_page.html', feed=feed)
+
+
+@app.route('/rss/<feed_name>')
+def rss(feed_name):
+    feed = storage.get_feeds(feed_name)
+    sort_episodes(feed)
+    return Response(create_rss(feed), mimetype='text/xml')
 
 
 if __name__ == '__main__':
-    main()
+    manager.run()
+
