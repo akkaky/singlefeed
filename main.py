@@ -101,15 +101,12 @@ def init():
     return settings
 
 
-def main():
-    settings = init()
-    scheduler = BackgroundScheduler()
-    scheduler.start()
-    scheduler.add_job(
-        update_feeds, trigger="interval", seconds=int(settings.get('timeout'))
-    )
-
-
+settings = init()
+scheduler = BackgroundScheduler()
+scheduler.start()
+scheduler.add_job(
+    update_feeds, trigger="interval", seconds=int(settings.get('timeout'))
+)
 app = Flask(__name__)
 
 
