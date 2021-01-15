@@ -107,7 +107,7 @@ def main():
     scheduler.add_job(
         update_feeds, trigger="interval", seconds=int(settings.get('timeout'))
     )
-    return Flask(__name__)
+    return Flask(__name__, static_url_path="/image", static_folder="image")
 
 
 app = main()
@@ -134,4 +134,4 @@ def rss(feed_name):
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
