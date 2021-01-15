@@ -2,8 +2,7 @@ import yaml
 import requests
 
 from apscheduler.schedulers.background import BackgroundScheduler
-from flask import Flask, Response, render_template
-
+from flask import Flask, Response, render_template, request, url_for
 
 from src import parser
 from src.container import Episode, Feed
@@ -129,6 +128,9 @@ def feed_page(feed_name):
 @app.route('/rss/<feed_name>')
 def rss(feed_name):
     feed = storage.get_feeds(feed_name)
+    feed.image = ''.join(
+        (request.base_url, url_for('static', filename=feed.image))
+    )
     sort_episodes(feed)
     return Response(create_rss(feed), mimetype='text/xml')
 

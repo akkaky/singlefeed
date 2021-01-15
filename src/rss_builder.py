@@ -1,4 +1,4 @@
-from pathlib import Path
+from flask import url_for
 from lxml import etree
 
 from .parser import namespaces
@@ -30,7 +30,7 @@ def create_rss(feed):
     last_build_date.text = feed.last_build_date
     image = etree.SubElement(channel, 'image')
     url = etree.SubElement(image, 'url')
-    url.text = str(Path(f'image/{feed.image}').absolute())
+    url.text = feed.image
     author = etree.SubElement(
         channel, f"{{{namespaces['itunes']}}}author"
     )
