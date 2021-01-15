@@ -129,7 +129,7 @@ def feed_page(feed_name):
 def rss(feed_name):
     feed = storage.get_feeds(feed_name)
     feed.image = ''.join(
-        (request.base_url, url_for('static', filename=feed.image))
+        (request.url_root[:-1], url_for('static', filename=feed.image))
     )
     sort_episodes(feed)
     return Response(create_rss(feed), mimetype='text/xml')
