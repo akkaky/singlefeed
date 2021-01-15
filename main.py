@@ -4,7 +4,10 @@ import requests
 import sys
 
 from apscheduler.schedulers.background import BackgroundScheduler
-from flask import abort, Flask, Response, render_template, request, url_for
+from flask import (
+    abort, Flask, Response, render_template, request, send_from_directory,
+    url_for,
+)
 
 from src import parser
 from src.container import Episode, Feed
@@ -120,29 +123,23 @@ def main():
     scheduler.add_job(
         update_feeds, trigger="interval", seconds=int(settings.get('timeout'))
     )
-    return Flask(__name__, static_url_path="/image", static_folder="image")
+    return Flask(__name__)
 
 
 app = main()
 
 
-def correct_image_url(feeds: list[Feed]) -> list[Feed]:
-    for feed in feeds:
-        feed.image = ''.join(
-            (request.url_root[:-1], url_for('static', filename=feed.image))
-        )
-    return feeds
-
-
 @app.route('/')
 def index():
-    feeds = correct_image_url(storage.get_feeds())
+    feeds = storage.get_feeds()
+    for feed in feeds:
+        feed.image = url_for('image_folder', filename=feed.image)
     return render_template('index.html', feeds=feeds)
 
 
 @app.route('/<feed_name>')
 def feed_page(feed_name):
-    feed = correct_image_url([storage.get_feeds(feed_name)])[0]
+    feed = storage.get_feeds(feed_name)
     if feed is None:
         abort(404)
     sort_episodes(feed)
@@ -151,11 +148,22 @@ def feed_page(feed_name):
 
 @app.route('/rss/<feed_name>')
 def rss(feed_name):
-    feed = correct_image_url([storage.get_feeds(feed_name)])[0]
+    feed = storage.get_feeds(feed_name)
     if feed is None:
         abort(404)
     sort_episodes(feed)
+    feed.image = ''.join(
+            (
+                request.url_root[:-1],
+                url_for('image_folder', filename=feed.image),
+            )
+        )
     return Response(create_rss(feed), mimetype='text/xml')
+
+
+@app.route('/image/<filename>')
+def image_folder(filename):
+    return send_from_directory('image', filename)
 
 
 @app.errorhandler(404)
