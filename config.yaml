@@ -7,6 +7,7 @@ feeds:
     sources:
       - http://zemlekop.libsyn.com/rss
       - https://arzamas.academy/feed_v1/podcast.rss
+      - https://echo.msk.ru/programs/napalcah/rss-audio.xml
 
   echo-msk:
     title: Эхо Москвы
@@ -20,6 +21,8 @@ feeds:
       - http://echo.msk.ru/programs/personalnovash/rss-audio.xml
       - http://www.echo.msk.ru/programs/code/rss-audio.xml
       - https://echo.msk.ru/programs/belkovskytime/rss-audio.xml
+      - https://echo.msk.ru/programs/nevsredy/rss-audio.xml
+      - https://echo.msk.ru/programs/personalno/rss-audio.xml
 
 settings:
   timeout: 60
