@@ -1,7 +1,6 @@
 feeds:
   science:
     title: Научпоп
-    link: http://example.com
     language: "ru"
     description: Землекоп и арзамас
     image: science.jpg
