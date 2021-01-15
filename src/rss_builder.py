@@ -31,6 +31,10 @@ def create_rss(feed):
     image = etree.SubElement(channel, 'image')
     url = etree.SubElement(image, 'url')
     url.text = feed.image
+    itunes_image = etree.SubElement(
+        channel, f"{{{namespaces['itunes']}}}image"
+    )
+    itunes_image.set('href', feed.image)
     author = etree.SubElement(
         channel, f"{{{namespaces['itunes']}}}author"
     )
