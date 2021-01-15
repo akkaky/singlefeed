@@ -1,7 +1,11 @@
+from pathlib import Path
 from lxml import etree
 
 from .parser import namespaces
 
+
+def get_url(srt):
+    pass
 
 def create_rss(feed):
     rss = etree.Element(
@@ -25,7 +29,8 @@ def create_rss(feed):
     last_build_date = etree.SubElement(channel, 'last_build_date')
     last_build_date.text = feed.last_build_date
     image = etree.SubElement(channel, 'image')
-    image.text = feed.image
+    url = etree.SubElement(image, 'url')
+    url.text = str(Path(f'image/{feed.image}').absolute())
     author = etree.SubElement(
         channel, f"{{{namespaces['itunes']}}}author"
     )
