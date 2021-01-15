@@ -1,4 +1,4 @@
-from src.logger import logger
+import logging
 import yaml
 import requests
 
@@ -14,6 +14,13 @@ from src.date_normalize import (
 )
 from src.rss_builder import create_rss
 from src import storage
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s',
+)
+logger = logging.getLogger(__name__)
 
 
 def get_config() -> dict:
