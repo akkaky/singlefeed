@@ -28,9 +28,9 @@ def create_rss(feed):
     feed_description.text = feed.description
     last_build_date = etree.SubElement(channel, 'last_build_date')
     last_build_date.text = feed.last_build_date
-    image = etree.SubElement(channel, 'image')
-    url = etree.SubElement(image, 'url')
-    url.text = feed.image
+    # image = etree.SubElement(channel, 'image')
+    # url = etree.SubElement(image, 'url')
+    # url.text = feed.image
     itunes_image = etree.SubElement(
         channel, f"{{{namespaces['itunes']}}}image"
     )
