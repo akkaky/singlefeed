@@ -19,7 +19,6 @@ def create_connection():
     try:
         conn = sqlite3.connect(DATA_BASE)
     except sqlite3.Error as error:
-        print(error)
         logger.error(error)
     return conn
 

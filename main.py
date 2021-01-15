@@ -1,6 +1,7 @@
 import logging
 import yaml
 import requests
+import sys
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import abort, Flask, Response, render_template, request, url_for
@@ -8,8 +9,7 @@ from flask import abort, Flask, Response, render_template, request, url_for
 from src import parser
 from src.container import Episode, Feed
 from src.date_normalize import (
-    normalize_timezone, string_to_datetime,
-    datetime_to_string,
+    normalize_timezone, string_to_datetime, datetime_to_string,
 )
 from src.rss_builder import create_rss
 from src import storage
@@ -26,8 +26,9 @@ def get_config() -> dict:
     try:
         with open('config.yaml') as s:
             return yaml.load(s, Loader=yaml.BaseLoader).values()
-    except FileNotFoundError:
-        logger.error("Can't open config.yaml")
+    except FileNotFoundError as e:
+        logger.error(e)
+        sys.exit()
 
 
 def get_feed_attr_values(feed: dict) -> tuple[str, str, str, str, str, str]:
@@ -100,7 +101,7 @@ def update_feeds():
         check_update(feed)
 
 
-def init():
+def init() -> dict:
     feeds, settings = get_config()
     if feeds and settings:
         logger.info('"config.yaml" loaded.')
@@ -125,15 +126,23 @@ def main():
 app = main()
 
 
+def correct_image_url(feeds: list[Feed]) -> list[Feed]:
+    for feed in feeds:
+        feed.image = ''.join(
+            (request.url_root[:-1], url_for('static', filename=feed.image))
+        )
+    return feeds
+
+
 @app.route('/')
 def index():
-    feeds = storage.get_feeds()
+    feeds = correct_image_url(storage.get_feeds())
     return render_template('index.html', feeds=feeds)
 
 
 @app.route('/<feed_name>')
 def feed_page(feed_name):
-    feed = storage.get_feeds(feed_name)
+    feed = correct_image_url([storage.get_feeds(feed_name)])[0]
     if feed is None:
         abort(404)
     sort_episodes(feed)
@@ -142,12 +151,9 @@ def feed_page(feed_name):
 
 @app.route('/rss/<feed_name>')
 def rss(feed_name):
-    feed = storage.get_feeds(feed_name)
+    feed = correct_image_url([storage.get_feeds(feed_name)])[0]
     if feed is None:
         abort(404)
-    feed.image = ''.join(
-        (request.url_root[:-1], url_for('static', filename=feed.image))
-    )
     sort_episodes(feed)
     return Response(create_rss(feed), mimetype='text/xml')
 
