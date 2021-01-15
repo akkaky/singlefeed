@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block title %}Page Not Found{% endblock %}
+{% block content %}
+  <h1>Page Not Found</h1>
+  <p>What you were looking for is just not there.
+  <h3>
+    <a href="{{ url_for('index') }}">List of feeds</a>
+  </h3>
+{% endblock %}

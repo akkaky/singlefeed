@@ -2,9 +2,8 @@ import logging
 import yaml
 import requests
 
-
 from apscheduler.schedulers.background import BackgroundScheduler
-from flask import Flask, Response, render_template, request, url_for
+from flask import abort, Flask, Response, render_template, request, url_for
 
 from src import parser
 from src.container import Episode, Feed
@@ -135,6 +134,8 @@ def index():
 @app.route('/<feed_name>')
 def feed_page(feed_name):
     feed = storage.get_feeds(feed_name)
+    if feed is None:
+        abort(404)
     sort_episodes(feed)
     return render_template('feed_page.html', feed=feed)
 
@@ -142,11 +143,18 @@ def feed_page(feed_name):
 @app.route('/rss/<feed_name>')
 def rss(feed_name):
     feed = storage.get_feeds(feed_name)
+    if feed is None:
+        abort(404)
     feed.image = ''.join(
         (request.url_root[:-1], url_for('static', filename=feed.image))
     )
     sort_episodes(feed)
     return Response(create_rss(feed), mimetype='text/xml')
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
 
 
 if __name__ == '__main__':
