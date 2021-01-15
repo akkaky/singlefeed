@@ -1,7 +1,11 @@
+import logging
 import json
 import sqlite3
 
 from .container import Episode, Feed, FeedEpisodeJsonEncoder, create_episode
+
+
+logger = logging.getLogger(__name__)
 
 DATA_BASE = 'singlefeed.db'
 FEED_ATTRIBUTES = ', '.join(list(Feed.__dict__['__dataclass_fields__'])[:-1])
@@ -16,13 +20,14 @@ def create_connection():
         conn = sqlite3.connect(DATA_BASE)
     except sqlite3.Error as error:
         print(error)
+        logger.error(error)
     return conn
 
 
 def drop_tables(conn):
     for table_name in ('feeds', 'episodes'):
         conn.execute(f'DROP TABLE IF EXISTS {table_name}')
-        print(f'Table {table_name} dropped')
+        logger.info(f'Table {table_name} dropped')
 
 
 def create():
@@ -56,13 +61,15 @@ def add_episodes(feed_name: str, episodes: list[Episode]):
 def get_feeds(name=None):
     with create_connection() as conn:
         if name:
-            feed = Feed(
-                *conn.execute(
+            data = conn.execute(
                     f'SELECT * FROM feeds WHERE name = "{name}"'
-                ).fetchone()
-            )
-            feed.episodes = get_episodes(feed.name, conn)
-            return feed
+            ).fetchone()
+            if data:
+                feed = Feed(*data)
+                feed.episodes = get_episodes(feed.name, conn)
+                return feed
+            logger.critical(f"{name} doesn't exist in database")
+            return None
         feeds = [Feed(*row) for row in conn.execute('SELECT * FROM feeds')]
         for feed in feeds:
             feed.episodes = get_episodes(feed.name, conn)

@@ -1,5 +1,7 @@
+from src.logger import logger
 import yaml
 import requests
+
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, Response, render_template, request, url_for
@@ -15,8 +17,11 @@ from src import storage
 
 
 def get_config() -> dict:
-    with open('config.yaml') as s:
-        return yaml.load(s, Loader=yaml.BaseLoader).values()
+    try:
+        with open('config.yaml') as s:
+            return yaml.load(s, Loader=yaml.BaseLoader).values()
+    except FileNotFoundError:
+        logger.error("Can't open config.yaml")
 
 
 def get_feed_attr_values(feed: dict) -> tuple[str, str, str, str, str, str]:
@@ -34,9 +39,9 @@ def create_feeds(feeds: dict) -> list[Feed]:
     for name, feed in feeds.items():
         feed = Feed(name, *get_feed_attr_values(feed))
         if feed:
-            print(f'"{feed.name}" feed created.')
+            logger.info(f'"{feed.name}" feed created.')
         else:
-            print(f"Can't to create {name} feed")
+            logger.critical(f"Can't to create {name} feed")
         feeds_list.append(feed)
     return feeds_list
 
@@ -62,7 +67,7 @@ def add_new_episodes(feed: Feed, rss_: str) -> list:
 def check_update(feed: Feed):
     new_episodes = []
     last_build_date_list = []
-    print(f'"{feed.name}" check updates...')
+    logger.info(f'"{feed.name}" check updates...')
     for url in feed.sources.split(', '):
         rss_str = requests.get(url).text
         last_build_date = string_to_datetime(normalize_timezone(
@@ -76,12 +81,12 @@ def check_update(feed: Feed):
         ):
             new_episodes.extend(add_new_episodes(feed, rss_str))
     if new_episodes:
-        print(f'"{feed.name}" {len(new_episodes)} new episodes added.')
+        logger.info(f'"{feed.name}" {len(new_episodes)} new episodes added.')
         feed.last_build_date = datetime_to_string(max(last_build_date_list))
         storage.add_episodes(feed.name, new_episodes)
         storage.update_last_build_date(feed)
     else:
-        print(f'"{feed.name}" feed is up to date.')
+        logger.info(f'"{feed.name}" feed is up to date.')
 
 
 def update_feeds():
@@ -91,12 +96,14 @@ def update_feeds():
 
 def init():
     feeds, settings = get_config()
-    feeds = create_feeds(feeds)
-    storage.create()
-    for feed in feeds:
-        storage.add_feed(feed)
-        check_update(feed)
-    return settings
+    if feeds and settings:
+        logger.info('"config.yaml" loaded.')
+        feeds = create_feeds(feeds)
+        storage.create()
+        for feed in feeds:
+            storage.add_feed(feed)
+            check_update(feed)
+        return settings
 
 
 def main():

@@ -10,10 +10,13 @@ Parses the RSS file and returns a list of the attributes of each episode:
     'image'
     'author'
 """
+import logging
 from lxml import etree
 
 from .date_normalize import normalize_timezone
 
+
+logger = logging.getLogger(__name__)
 
 namespaces = {
     'itunes': 'http://www.itunes.com/dtds/podcast-1.0.dtd',
@@ -23,12 +26,14 @@ namespaces = {
 
 def _parse_title(item):
     if item.find('title') is None:
+        logger.error("Can't parse 'title'")
         return None
     return item.find('title').text.strip()
 
 
 def _parse_enclosure(item):
     if item.find('enclosure') is None:
+        logger.error("Can't parse 'enclosure'")
         return None
     enclosure = dict(item.find('enclosure').attrib)
     length = enclosure.get('length')
@@ -45,18 +50,21 @@ def _parse_link(item):
 
 def _parse_published(item):
     if item.find('pubDate') is None:
+        logger.error("Can't parse 'pubDate'")
         return None
     return normalize_timezone(item.find('pubDate').text.strip())
 
 
 def _parse_description(item):
     if item.find('description') is None:
+        logger.error("Can't parse 'description'")
         return None
     return item.find('description').text.strip()
 
 
 def _parse_duration(item):
     if item.find('itunes:duration', namespaces) is None:
+        logger.error("Can't parse 'duration'")
         return None
     return item.find('itunes:duration', namespaces).text
 

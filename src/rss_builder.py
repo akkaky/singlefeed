@@ -4,9 +4,6 @@ from lxml import etree
 from .parser import namespaces
 
 
-def get_url(srt):
-    pass
-
 def create_rss(feed):
     rss = etree.Element(
         'rss',
