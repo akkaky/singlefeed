@@ -11,7 +11,7 @@ feeds:
 
   echo-msk:
     title: Эхо Москвы
-    description: Фид избранных передач
+    description: Избранные передачи
     link: http://echo.msk.ru
     language: "ru"
     image: echo_msk.png
