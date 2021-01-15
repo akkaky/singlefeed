@@ -2,6 +2,7 @@ import logging
 import yaml
 import requests
 import sys
+from datetime import datetime, timezone
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import (
@@ -65,34 +66,19 @@ def sort_episodes(feed: Feed):
 
 
 def add_new_episodes(feed: Feed, rss_: str) -> list:
-    episodes = []
-    for episode in parser.get_episodes(rss_):
-        episode = Episode(**episode)
-        if episode in feed.episodes:
-            break
-        episodes.append(episode)
-    return episodes
+    episodes = (Episode(**episode) for episode in parser.get_episodes(rss_))
+    return [episode for episode in episodes if episode not in feed.episodes]
 
 
 def check_update(feed: Feed):
     new_episodes = []
-    last_build_date_list = []
     logger.info(f'"{feed.name}" check updates...')
     for url in feed.sources.split(', '):
         rss_str = requests.get(url).text
-        last_build_date = string_to_datetime(normalize_timezone(
-            parser.get_last_build_date(rss_str)
-        )
-        )
-        if last_build_date:
-            last_build_date_list.append(last_build_date)
-        if feed.last_build_date is None or (string_to_datetime(
-                feed.last_build_date) < max(last_build_date_list)
-        ):
-            new_episodes.extend(add_new_episodes(feed, rss_str))
+        new_episodes.extend(add_new_episodes(feed, rss_str))
     if new_episodes:
         logger.info(f'"{feed.name}" {len(new_episodes)} new episodes added.')
-        feed.last_build_date = datetime_to_string(max(last_build_date_list))
+        feed.last_build_date = datetime_to_string(datetime.now().astimezone())
         storage.add_episodes(feed.name, new_episodes)
         storage.update_last_build_date(feed)
     else:
