@@ -2,7 +2,7 @@ import logging
 import yaml
 import requests
 import sys
-from datetime import datetime, timezone
+from datetime import datetime
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import (
@@ -12,9 +12,7 @@ from flask import (
 
 from src import parser
 from src.container import Episode, Feed
-from src.date_normalize import (
-    normalize_timezone, string_to_datetime, datetime_to_string,
-)
+from src.date_normalize import string_to_datetime, datetime_to_string
 from src.rss_builder import create_rss
 from src import storage
 
@@ -115,6 +113,18 @@ def main():
 app = main()
 
 
+def load_feed_from_db(feed_name):
+    feed = storage.get_feeds(feed_name)
+    if feed is None:
+        abort(404)
+    try:
+        sort_episodes(feed)
+    except TypeError as e:
+        logger.error(e)
+    finally:
+        return feed
+
+
 @app.route('/')
 def index():
     feeds = storage.get_feeds()
@@ -125,19 +135,13 @@ def index():
 
 @app.route('/<feed_name>')
 def feed_page(feed_name):
-    feed = storage.get_feeds(feed_name)
-    if feed is None:
-        abort(404)
-    sort_episodes(feed)
+    feed = load_feed_from_db(feed_name)
     return render_template('feed_page.html', feed=feed)
 
 
 @app.route('/rss/<feed_name>')
 def rss(feed_name):
-    feed = storage.get_feeds(feed_name)
-    if feed is None:
-        abort(404)
-    sort_episodes(feed)
+    feed = load_feed_from_db(feed_name)
     feed.image = ''.join(
             (
                 request.url_root[:-1],

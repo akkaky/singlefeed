@@ -26,15 +26,15 @@ namespaces = {
 
 def _parse_title(item):
     if item.find('title') is None:
-        logger.error("Can't parse 'title'")
-        return None
+        logger.warning("Can't parse 'title'")
+        return ''
     return item.find('title').text.strip()
 
 
 def _parse_enclosure(item):
     if item.find('enclosure') is None:
-        logger.error("Can't parse 'enclosure'")
-        return None
+        logger.warning("Can't parse 'enclosure'")
+        return ''
     enclosure = dict(item.find('enclosure').attrib)
     length = enclosure.get('length')
     type_ = enclosure.get('type')
@@ -50,22 +50,22 @@ def _parse_link(item):
 
 def _parse_published(item):
     if item.find('pubDate') is None:
-        logger.error("Can't parse 'pubDate'")
-        return None
+        logger.warning("Can't parse 'pubDate'")
+        return ''
     return normalize_timezone(item.find('pubDate').text.strip())
 
 
 def _parse_description(item):
     if item.find('description') is None:
-        logger.error("Can't parse 'description'")
-        return None
+        logger.warning("Can't parse 'description'")
+        return ''
     return item.find('description').text.strip()
 
 
 def _parse_duration(item):
     if item.find('itunes:duration', namespaces) is None:
-        logger.error("Can't parse 'duration'")
-        return None
+        logger.warning("Can't parse 'duration'")
+        return ''
     return item.find('itunes:duration', namespaces).text
 
 

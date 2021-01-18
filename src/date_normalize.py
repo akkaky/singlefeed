@@ -6,7 +6,10 @@ DATE_FORMAT = '%a, %d %b %Y %H:%M:%S %z'
 
 
 def string_to_datetime(string: str) -> datetime:
-    return datetime.strptime(string, DATE_FORMAT)
+    try:
+        return datetime.strptime(string, DATE_FORMAT)
+    except ValueError as e:
+        logger.error(e)
 
 
 def datetime_to_string(date: datetime) -> str:
