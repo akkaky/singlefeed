@@ -4,9 +4,7 @@ from datetime import datetime, timedelta, timezone
 from unittest import TestCase
 from unittest.mock import patch
 
-from src.date_normalize import (
-string_to_datetime, datetime_to_string, normalize_timezone
-)
+from src.date_normalize import string_to_datetime, normalize_timezone
 
 
 class StringToDateTestCase(TestCase):

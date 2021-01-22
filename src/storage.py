@@ -6,7 +6,6 @@ from .container import Episode, Feed, FeedEpisodeJsonEncoder, create_episode
 
 
 logger = logging.getLogger(__name__)
-
 DATA_BASE = 'singlefeed.db'
 FEED_ATTRIBUTES = ', '.join(list(Feed.__dict__['__dataclass_fields__'])[:-1])
 EPISODE_ATTRIBUTES = (

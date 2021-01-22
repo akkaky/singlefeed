@@ -2,6 +2,7 @@ from unittest import TestCase
 
 from src.container import Episode, Feed
 
+
 episode = Episode(
                     title='Title 1',
                     enclosure={
@@ -16,7 +17,6 @@ episode = Episode(
                     image='https://example.com/_3000px.jpg',
                     author="Feed's author",
                     )
-
 feed = Feed(
             name='Feed name',
             title='Feed title',
@@ -28,6 +28,7 @@ feed = Feed(
             last_build_date='Thu, 24 Dec 2022 22:58:27 +0000',
             episodes=[episode],
         )
+
 
 class EpisodeTestCase(TestCase):
 

@@ -17,7 +17,6 @@ from .date_normalize import normalize_timezone
 
 
 logger = logging.getLogger(__name__)
-
 namespaces = {
     'itunes': 'http://www.itunes.com/dtds/podcast-1.0.dtd',
     'atom': 'http://www.w3.org/2005/Atom',
