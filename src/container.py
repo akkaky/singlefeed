@@ -40,6 +40,15 @@ class Feed:
         )
 
 
+def get_container_attrs_keys(dataclass_name: str) -> str:
+    if dataclass_name is 'Feed':
+        return ', '.join(list(Feed.__dict__['__dataclass_fields__'])[:-1])
+    if dataclass_name is 'Episode':
+        return (
+            f'feed_name, {", ".join(Episode.__dict__["__dataclass_fields__"])}'
+        )
+
+
 class FeedEpisodeJsonEncoder(JSONEncoder):
 
     def default(self, obj: Union[Feed, Episode]) -> dict:

@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from src.container import Episode, Feed
+from src.container import Episode, Feed, get_container_attrs_keys
 
 
 episode = Episode(
@@ -60,3 +60,20 @@ class FeedTestCase(TestCase):
             'Thu, 24 Dec 2022 22:58:27 +0000',
         ]
         self.assertListEqual(expected_tesult, list(feed.get_attrs_values()))
+
+
+class GetContainerAttrsKeysTestCase(TestCase):
+
+    def test__feed_class(self):
+        expected_data = (
+            'name, title, link, language, description, image, sources, '
+            'last_build_date'
+        )
+        self.assertEqual(expected_data, get_container_attrs_keys('Feed'))
+
+    def test__episode_class(self):
+        expected_data = (
+            'feed_name, title, enclosure, link, published, description, '
+            'duration, image, author'
+        )
+        self.assertEqual(expected_data, get_container_attrs_keys('Episode'))

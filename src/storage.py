@@ -1,22 +1,22 @@
 import logging
 import json
 import sqlite3
+from typing import Union
 
-from .container import Episode, Feed, FeedEpisodeJsonEncoder, create_episode
+from .container import (
+    Episode, Feed, FeedEpisodeJsonEncoder, create_episode,
+    get_container_attrs_keys,
+)
 
 
 logger = logging.getLogger(__name__)
-DATA_BASE = 'singlefeed.db'
-FEED_ATTRIBUTES = ', '.join(list(Feed.__dict__['__dataclass_fields__'])[:-1])
-EPISODE_ATTRIBUTES = (
-    f'feed_name, {", ".join(Episode.__dict__["__dataclass_fields__"])}'
-)
+database = 'singlefeed.db'
 
 
 def create_connection():
     conn = None
     try:
-        conn = sqlite3.connect(DATA_BASE)
+        conn = sqlite3.connect(database)
     except sqlite3.Error as error:
         logger.error(error)
     return conn
@@ -25,17 +25,16 @@ def create_connection():
 def drop_tables(conn):
     for table_name in ('feeds', 'episodes'):
         conn.execute(f'DROP TABLE IF EXISTS {table_name}')
-        logger.info(f'Table {table_name} dropped')
 
 
 def create():
     with create_connection() as conn:
         drop_tables(conn)
         conn.execute(
-            f'CREATE TABLE feeds({FEED_ATTRIBUTES})'
+            f'CREATE TABLE feeds({get_container_attrs_keys("Feed")})'
         )
         conn.execute(
-            f'CREATE TABLE episodes({EPISODE_ATTRIBUTES})'
+            f'CREATE TABLE episodes({get_container_attrs_keys("Episode")})'
         )
 
 
@@ -56,7 +55,7 @@ def add_episodes(feed_name: str, episodes: list[Episode]):
             )
 
 
-def get_feeds(name=None):
+def get_feeds(name=None) -> Union[Feed, None, list[Feed]]:
     with create_connection() as conn:
         if name:
             data = conn.execute(
@@ -66,7 +65,7 @@ def get_feeds(name=None):
                 feed = Feed(*data)
                 feed.episodes = get_episodes(feed.name, conn)
                 return feed
-            logger.critical(f"{name} doesn't exist in database")
+            logger.error(f"'{name}' does not exist in database")
             return None
         feeds = [Feed(*row) for row in conn.execute('SELECT * FROM feeds')]
         for feed in feeds:
