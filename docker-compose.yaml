@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  singlefeed:
+    build: .
+    volumes:
+      - ./config.yaml:/singlefeed/config.yaml
+      - ./image:/singlefeed/image
+    ports:
+      - 80:8000
+    restart: always

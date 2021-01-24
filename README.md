@@ -1,21 +1,25 @@
+## Singlefeed
 Make your unique podcast RSS feed from several feeds and publish it. It is possible to use podcast clients.
 
-## Parser
+## Install 
+Make sure [Docker](https://www.docker.com/) is install on your server.
 
-- Parse the RSS file from a user-entered URL in WebUI or read from a file contaned URL's list.
-- Create a new RSS file by [Podcast RSS feed technical requirements](https://itunespartner.apple.com/podcasts/articles/podcast-requirements-3058)
-  with user preferences for the feed like `title`,`description`, etc., taken from the input or setup file.
+Run `git clone https://github.com/akkaky/singlefeed.git` in command line on your server.
 
-## Web Server
+## Config
+Put images for each feed to `image` folder. 
 
-- Publish RSS at: `http://example.com/rss/{your_feed name}`
-- Automatically updates RSS when new podcast episodes are available.
+Set up `config.yaml` in the app root directory to create your feeds.
+The subblock names of the `feeds` block are using in your feed URL. 
+In the `image` field of each feed enter a filename for the image, not path to file.
+
+## Run
+Execute `docker-compose up` in command line.
+
+## Get RSS
+- RSS available at `http://your_adress.com/rss/{your_feed_name}`
+- RSS automatically updates when new podcast episodes are available.
 
 ## WebUI
-
-- Acces to list of episodes at: `http://example.com/{your_feed name}`
-- Sorting list by date.
-
-## Docker
-
-Planned
+- Access to list of episodes at: `http://your_adress.com/`
+- Access to feed at: `http://your_adress.com/{your_feed_name}`

@@ -41,9 +41,9 @@ class Feed:
 
 
 def get_container_attrs_keys(dataclass_name: str) -> str:
-    if dataclass_name is 'Feed':
+    if dataclass_name == 'Feed':
         return ', '.join(list(Feed.__dict__['__dataclass_fields__'])[:-1])
-    if dataclass_name is 'Episode':
+    if dataclass_name == 'Episode':
         return (
             f'feed_name, {", ".join(Episode.__dict__["__dataclass_fields__"])}'
         )
