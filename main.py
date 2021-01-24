@@ -5,16 +5,16 @@ import sys
 from datetime import datetime
 
 from apscheduler.schedulers.background import BackgroundScheduler
-from flask import (
-    abort, Flask, Response, render_template, request, send_from_directory,
-    url_for,
-)
+from flask import Flask, Response, abort, render_template, request, \
+    send_from_directory, url_for
+from sqlalchemy.exc import NoResultFound
+from sqlalchemy.orm import Session
 
 from src import parser
-from src.container import Episode, Feed
-from src.date_normalize import string_to_datetime, datetime_to_string
+from src.container import Enclosure, Episode, Feed, Source
+from src.date_normalize import string_to_datetime
 from src.rss_builder import create_rss
-from src import storage
+from src.storage import engine
 
 
 default_settings = {'timeout': '60'}
@@ -23,6 +23,7 @@ logging.basicConfig(
     format='[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s',
 )
 logger = logging.getLogger(__name__)
+session = Session(engine)
 
 
 def get_config() -> dict:
@@ -36,20 +37,20 @@ def get_config() -> dict:
 
 def create_feeds(feeds: dict) -> list[Feed]:
     feeds_list = []
-    for name, feed in feeds.items():
+    for name, feed_data in feeds.items():
         feed = Feed(
             name=name,
-            title=feed.get('title'),
-            link=feed.get('link'),
-            language=feed.get('language'),
-            description=feed.get('description'),
-            image=feed.get('image'),
-            sources=feed.get('sources'),
+            title=feed_data.get('title'),
+            link=feed_data.get('link'),
+            language=feed_data.get('language'),
+            description=feed_data.get('description'),
+            image=feed_data.get('image'),
+            sources=[Source(url) for url in feed_data.get('sources')],
         )
-        if feed:
-            logger.info(f'"{feed.name}" feed created.')
+        if feed_data:
+            logger.info(f'"{feed.name}" feed_data created.')
         else:
-            logger.error(f"Can't to create {name} feed")
+            logger.error(f"Can't to create {name} feed_data")
         feeds_list.append(feed)
     return feeds_list
 
@@ -62,29 +63,43 @@ def sort_episodes(feed: Feed):
         )
 
 
-def add_new_episodes(feed: Feed, rss_: str) -> list[Episode]:
-    episodes = (Episode(**episode) for episode in parser.get_episodes(rss_))
-    return [episode for episode in episodes if episode not in feed.episodes]
+def new_episodes_list(feed: Feed, rss_: str) -> list[Episode]:
+    episodes = (
+        Episode(
+            title=episode['title'],
+            enclosure=Enclosure(**episode['enclosure']),
+            link=episode['link'],
+            published=string_to_datetime(episode['published']),
+            description=episode['description'],
+            duration=episode['duration'],
+            image=episode['image'],
+            author=episode['author'],
+        ) for episode in parser.get_episodes(rss_)
+    )
+    return [
+        episode for episode in episodes if (episode.title, episode.link) not in
+        [(e.title, e.link) for e in feed.episodes]
+    ]
 
 
 def check_update(feed: Feed):
     new_episodes = []
     logger.info(f'"{feed.name}" check updates...')
-    for url in feed.sources:
-        rss_str = requests.get(url).text
-        new_episodes.extend(add_new_episodes(feed, rss_str))
+    for source in feed.sources:
+        rss_str = requests.get(source.url).text
+        new_episodes.extend(new_episodes_list(feed, rss_str))
     if new_episodes:
+        feed.episodes.extend(new_episodes)
+        feed.last_build_date = datetime.now().astimezone()
         logger.info(f'"{feed.name}" {len(new_episodes)} new episodes added.')
-        feed.last_build_date = datetime_to_string(datetime.now().astimezone())
-        storage.add_episodes(feed.name, new_episodes)
-        storage.update_last_build_date(feed)
     else:
         logger.info(f'"{feed.name}" feed is up to date.')
 
 
 def update_feeds():
-    for feed in storage.get_feeds():
+    for feed in session.query(Feed).all():
         check_update(feed)
+        session.commit()
 
 
 def init() -> dict:
@@ -97,15 +112,15 @@ def init() -> dict:
         sys.exit()
     settings = config.setdefault('settings', default_settings)
     feeds = create_feeds(feeds)
-    storage.create()
     for feed in feeds:
-        storage.add_feed(feed)
-        check_update(feed)
+        session.add(feed)
+    session.commit()
     return settings
 
 
 def main():
     settings = init()
+    update_feeds()
     scheduler = BackgroundScheduler()
     scheduler.start()
     scheduler.add_job(
@@ -117,42 +132,40 @@ def main():
 app = main()
 
 
-def load_feed_from_db(feed_name):
-    feed = storage.get_feeds(feed_name)
-    if feed is None:
-        abort(404)
+def load_feed_from_db(feed_name: str) -> Feed:
     try:
-        sort_episodes(feed)
+        return session.query(Feed).filter_by(name=feed_name).one()
     except TypeError as e:
         logger.error(e)
-    finally:
-        return feed
+        abort(404)
 
 
 @app.route('/')
 def index():
-    feeds = storage.get_feeds()
-    for feed in feeds:
-        feed.image = url_for('image_folder', filename=feed.image)
+    feeds = session.query(Feed).all()
     return render_template('index.html', feeds=feeds)
 
 
 @app.route('/<feed_name>')
 def feed_page(feed_name):
-    feed = load_feed_from_db(feed_name)
-    return render_template('feed_page.html', feed=feed)
+    try:
+        feed = load_feed_from_db(feed_name)
+        return render_template('feed_page.html', feed=feed)
+    except NoResultFound:
+        abort(404)
 
 
 @app.route('/rss/<feed_name>')
 def rss(feed_name):
     feed = load_feed_from_db(feed_name)
-    feed.image = ''.join(
+    url_for_feed_image: str = ''.join(
             (
                 request.url_root[:-1],
                 url_for('image_folder', filename=feed.image),
-            )
+            ),
         )
-    return Response(create_rss(feed), mimetype='text/xml')
+    print(url_for_feed_image)
+    return Response(create_rss(feed, url_for_feed_image), mimetype='text/xml')
 
 
 @app.route('/image/<filename>')

@@ -1,15 +1,3 @@
-"""Parser RSS.
-
-Parses the RSS file and returns a list of the attributes of each episode:
-    'title'
-    'enclosure'
-    'link'
-    'published'
-    'description'
-    'duration'
-    'image'
-    'author'
-"""
 import logging
 from lxml import etree
 
@@ -89,7 +77,7 @@ def _parse_author(item):
     ) or item.find('author').text
 
 
-def _parse_episode(item):
+def _parse_episode(item) -> dict:
     return {
         'title': _parse_title(item),
         'enclosure': _parse_enclosure(item),
@@ -106,8 +94,3 @@ def get_episodes(rss_str: str) -> dict:
     feed = etree.XML(rss_str.encode('utf-8'))
     for item in feed.iter('item'):
         yield _parse_episode(item)
-
-
-def get_last_build_date(rss_str: str) -> str:
-    feed = etree.XML(rss_str.encode('utf-8'))
-    return str(*feed.xpath('/rss/channel/lastBuildDate/text()'))

@@ -1,0 +1,15 @@
+[flake8]
+## Common settings:
+exclude =
+    .venv,
+    .github,
+
+statistics = True
+max-line-length = 79
+
+## flake8-import-order
+import-order-style = google
+
+## flake8-quotes
+inline-quotes = single
+multiline-quotes = double

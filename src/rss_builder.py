@@ -1,9 +1,11 @@
 from lxml import etree
 
+from .container import Feed
+from .date_normalize import datetime_to_string
 from .parser import namespaces
 
 
-def create_rss(feed):
+def create_rss(feed: Feed, url_for_feed_image: str) -> bytes:
     rss = etree.Element(
         'rss',
         nsmap={
@@ -23,11 +25,11 @@ def create_rss(feed):
     feed_description = etree.SubElement(channel, 'description')
     feed_description.text = feed.description
     last_build_date = etree.SubElement(channel, 'last_build_date')
-    last_build_date.text = feed.last_build_date
+    last_build_date.text = datetime_to_string(feed.last_build_date)
     itunes_image = etree.SubElement(
         channel, f"{{{namespaces['itunes']}}}image"
     )
-    itunes_image.set('href', feed.image)
+    itunes_image.set('href', url_for_feed_image)
     author = etree.SubElement(
         channel, f"{{{namespaces['itunes']}}}author"
     )
@@ -37,15 +39,16 @@ def create_rss(feed):
         item_title = etree.SubElement(item, 'title')
         item_title.text = episode.title
         enclosure = etree.SubElement(item, 'enclosure')
-        for key, value in episode.enclosure.items():
-            enclosure.set(key, value)
+        enclosure.set('length', episode.enclosure.length)
+        enclosure.set('type', episode.enclosure.type)
+        enclosure.set('url', episode.enclosure.url)
         if episode.link:
             link = etree.SubElement(item, 'link')
             link.text = episode.link
         guid = etree.SubElement(item, 'guid')
         guid.text = episode.link
         pub_date = etree.SubElement(item, 'pubDate')
-        pub_date.text = episode.published
+        pub_date.text = datetime_to_string(episode.published)
         item_description = etree.SubElement(item, 'description')
         item_description.text = episode.description
         if episode.duration:

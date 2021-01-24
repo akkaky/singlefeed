@@ -1,12 +1,41 @@
+#feeds:
+#  name_of_feed: # Will use in URl. http://yourserver.com/name_of_feed
+#    title: Example title
+#    language: "en"
+#    description: Describe your feed
+#    image: image.jpg # The name of the image file placed in the /image directory
+#    sources:
+#      - http://podcast1.com/rss
+#      - https://podcast2.com/podcast.rss
+#
+#settings:
+#  timeout: 60 # Time in seconds. How often to check for new episodes of podcasts
+#Examle:
 feeds:
-  name_of_feed: # Will use in URl. http://yourserver.com/name_of_feed
-    title: Example title
-    language: "en"
-    description: Describe your feed
-    image: image.jpg # The name of the image file placed in the /image directory
+  science:
+    title: Научпоп
+    language: "ru"
+    description: Землекоп и арзамас
+    image: image.jpg
     sources:
-      - http://podcast1.com/rss
-      - https://podcast2.com/podcast.rss
+      - http://zemlekop.libsyn.com/rss
+      - https://arzamas.academy/feed_v1/podcast.rss
+      - https://echo.msk.ru/programs/napalcah/rss-audio.xml
 
+  echo-msk:
+    title: Эхо Москвы
+    description: Избранные передачи
+    link: http://echo.msk.ru
+    language: "ru"
+    image: echo_msk.png
+    sources:
+      - http://www.echo.msk.ru/programs/graniweek/rss-audio.xml
+      - http://www.echo.msk.ru/programs/tochka/rss-audio.xml
+      - http://echo.msk.ru/programs/personalnovash/rss-audio.xml
+      - http://www.echo.msk.ru/programs/code/rss-audio.xml
+      - https://echo.msk.ru/programs/belkovskytime/rss-audio.xml
+      - https://echo.msk.ru/programs/nevsredy/rss-audio.xml
+      - https://echo.msk.ru/programs/personalno/rss-audio.xml
 settings:
-  timeout: 60 # Time in seconds. How often to check for new episodes of podcasts
+  timeout:
+    60

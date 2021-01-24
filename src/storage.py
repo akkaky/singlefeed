@@ -1,118 +1,72 @@
 import logging
-import json
-import sqlite3
-from typing import Union
 
-from .container import (
-    Episode, Feed, FeedEpisodeJsonEncoder, create_episode,
-    get_container_attrs_keys,
-)
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, MetaData, \
+    String, Table, create_engine
+from sqlalchemy.orm import Session, registry, relationship
+
+from .container import Episode, Enclosure, Feed, Source
 
 
 logger = logging.getLogger(__name__)
-db_file = 'singlefeed.db'
+db_file = 'singlefeed.sqlite'
+engine = create_engine(f'sqlite:///{db_file}')
+session = Session(engine)
+mapper_registry = registry()
+metadata = MetaData(engine)
+enclosure_table = Table(
+    'enclosure',
+    metadata,
+    Column('id', Integer, primary_key=True),
+    Column('episode_id', Integer, ForeignKey('episodes.id')),
+    Column('length', String),
+    Column('type', String),
+    Column('url', String),
+)
+episodes_table = Table(
+    'episodes',
+    metadata,
+    Column('id', Integer, primary_key=True),
+    Column('feed_name', String, ForeignKey('feeds.name')),
+    Column('title', String),
+    Column('link', String),
+    Column('published', DateTime),
+    Column('description', String),
+    Column('duration', String),
+    Column('image', String),
+    Column('author', String)
+)
+sources_table = Table(
+    'sources',
+    metadata,
+    Column('id', Integer, primary_key=True),
+    Column('feed_name', String, ForeignKey('feeds.name')),
+    Column('url', String),
+)
+feeds_table = Table(
+    'feeds',
+    metadata,
+    Column('name', String, primary_key=True),
+    Column('title', String),
+    Column('link', String),
+    Column('language', String),
+    Column('description', String),
+    Column('image', String),
+    Column('last_build_date', DateTime)
 
+)
+mapper_registry.map_imperatively(
+    Feed, feeds_table, properties={
+        'sources': relationship(Source),
+        'episodes': relationship(Episode, order_by='Episode.published.desc()')
+    }
+)
 
-def create_connection():
-    conn = None
-    try:
-        conn = sqlite3.connect(db_file)
-    except sqlite3.Error as error:
-        logger.error(error)
-    return conn
-
-
-def drop_tables(conn):
-    for table_name in ('feeds', 'episodes', 'sources'):
-        conn.execute(f'DROP TABLE IF EXISTS {table_name}')
-
-
-def create():
-    with create_connection() as conn:
-        drop_tables(conn)
-        conn.execute(
-            f'CREATE TABLE feeds({get_container_attrs_keys("Feed")})'
-        )
-        conn.execute(
-            f'CREATE TABLE episodes({get_container_attrs_keys("Episode")})'
-        )
-        conn.execute(
-            f'CREATE TABLE sources(feed_name, url)'
-        )
-
-
-def add_feed(feed: Feed):
-    with create_connection() as conn:
-        # print(tuple(feed.get_attrs_values()))
-        conn.execute(
-            f'INSERT INTO feeds VALUES ({",".join("?" * 7)})',
-            tuple(feed.get_attrs_values()),
-        )
-        for source in feed.sources:
-            conn.execute(
-                'INSERT INTO sources VALUES(?, ?)', (feed.name, source,),
-            )
-
-
-def add_episodes(feed_name: str, episodes: list[Episode]):
-    with create_connection() as conn:
-        for episode in episodes:
-            conn.execute(
-                f'INSERT INTO episodes VALUES ({",".join("?" * 9)})',
-                (feed_name, *episode.get_attrs_values()),
-            )
-
-
-def _get_sources(feed_name: str, conn: sqlite3.Connection) -> list[str]:
-    return [
-        str(*row) for row in conn.execute(
-            f'SELECT url FROM sources WHERE feed_name = "{feed_name}"'
-        )
-    ]
-
-
-def get_feeds(name=None) -> Union[Feed, None, list[Feed]]:
-    with create_connection() as conn:
-        if name:
-            data = conn.execute(
-                    f'SELECT * FROM feeds WHERE name = "{name}"'
-            ).fetchone()
-            if data:
-                feed = Feed(*data)
-                feed.episodes = get_episodes(feed.name, conn)
-                feed.sources = _get_sources(name, conn)
-                return feed
-            logger.error(f"'{name}' does not exist in database")
-            return None
-        feeds = [Feed(*row) for row in conn.execute('SELECT * FROM feeds')]
-        for feed in feeds:
-            feed.episodes = get_episodes(feed.name, conn)
-            feed.sources = _get_sources(feed.name, conn)
-        return feeds
-
-
-def get_episodes(feed_name, conn: sqlite3.Connection):
-    return [
-        create_episode(row[1:]) for row in conn.execute(
-            f'SELECT * FROM episodes WHERE feed_name = "{feed_name}"'
-        )
-    ]
-
-
-def update_last_build_date(feed: Feed):
-    with create_connection() as conn:
-        conn.execute(
-            f'UPDATE feeds SET last_build_date = "{feed.last_build_date}" '
-            f'WHERE name = "{feed.name}"'
-        )
-
-
-def json_load(file_name: str) -> dict:
-    with open(file_name) as json_file:
-        return json.load(json_file)
-
-
-def json_dump(feed: Feed):
-    with open(f'{feed.name}.json', 'w') as file:
-        json.dump(feed, file, cls=FeedEpisodeJsonEncoder, indent=4)
-        print(f'"{feed.name}.json" file created')
+mapper_registry.map_imperatively(
+    Episode, episodes_table, properties={
+        'enclosure': relationship(Enclosure, uselist=False)
+    }
+)
+mapper_registry.map_imperatively(Enclosure, enclosure_table)
+mapper_registry.map_imperatively(Source, sources_table)
+metadata.drop_all()
+metadata.create_all()

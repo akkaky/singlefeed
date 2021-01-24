@@ -1,78 +1,41 @@
+from pathlib import Path
 from unittest import TestCase
 
 from lxml import etree
 
 import src.parser as parser
 from src.parser import get_episodes, logger
-from src.container import Episode
 
 
-CORRECT_RSS = """
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" 
-  xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
-  <channel>
-    <atom:link href="https://example.com" rel="self" 
-      type="application/rss+xml"/>
-    <title>Feed's title</title>
-    <pubDate>Thu, 24 Dec 2020 22:58:27 +0000</pubDate>
-    <lastBuildDate>Fri, 15 Jan 2021 06:53:10 +0000</lastBuildDate>
-    <link>https://example.com</link>
-    <language>ru</language>
-    <itunes:summary></itunes:summary>
-    <image>
-      <url>https://example.com/3000px.jpg</url>
-      <title>Feed's title</title>
-      <link>https://example.com/</link>
-    </image>
-    <itunes:author>Feed's author</itunes:author>
-    <itunes:image href="https://example.com/3000px.jpg" />
-    <description>Feed's description</description>
-    <item>
-      <title>Title 1</title>
-      <itunes:title>Title 1</itunes:title>
-      <pubDate>Thu, 24 Dec 2020 22:58:27 +0000</pubDate>
-      <guid>https://example.com/1.mp3</guid>
-      <link>https://example.com/episode</link>
-      <itunes:image href="https://example.com/_3000px.jpg" />
-      <description>Item description</description>
-      <enclosure length="26229027" type="audio/mpeg" 
-        url="https://example.com/1.mp3" />
-      <itunes:duration>27:20</itunes:duration>
-      <itunes:author>Feed's author</itunes:author>
-    </item>
-  </channel>
-</rss>
-"""
+with open(Path(__file__).parent.joinpath('correct_rss.xml').resolve()) as file:
+    CORRECT_RSS = file.read()
 ITEM_EMPTY_TAGS = etree.XML('<item></item>')
 
 
 class GetEpisodesTestCase(TestCase):
 
     def setUp(self) -> None:
-        self.correct_episodes_list = [
-            Episode(
-                title='Title 1',
-                enclosure={
+        self.correct_parsed_episodes_list = [
+            {
+                'title': 'Title 1',
+                'enclosure': {
                     'length': '26229027',
                     'type': 'audio/mpeg',
-                    'url': 'https://example.com/1.mp3'
+                    'url': 'https://example.com/1.mp3',
                 },
-                link='https://example.com/episode',
-                published='Thu, 24 Dec 2020 22:58:27 +0000',
-                description='Item description',
-                duration='27:20',
-                image='https://example.com/_3000px.jpg',
-                author="Feed's author",
-            )
+                'link': 'https://example.com/episode',
+                'published': 'Thu, 24 Dec 2020 22:58:27 +0000',
+                'description': 'Item description',
+                'duration': '27:20',
+                'image': 'https://example.com/_3000px.jpg',
+                'author': "Feed's author",
+            }
         ]
 
     def test__correct_rss(self):
         self.assertEqual(
-            self.correct_episodes_list,
-            [
-                Episode(**dictionary) for dictionary in
-                get_episodes(CORRECT_RSS)
-            ],
+            self.correct_parsed_episodes_list,
+            [episode for episode in get_episodes(CORRECT_RSS)],
         )
 
     def test__parse_title__empty_tag__empty_str(self):

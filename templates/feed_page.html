@@ -5,16 +5,17 @@
     <hr>
     {% for episode in feed.episodes %}
         <div>
-            <p><img src="{{ episode.image }}" width="60" height="60"></p>
+            <p><img src="{{ episode.image }}" width="60" height="60" alt="{{ feed.title }}"></p>
             <p>
             <h3>{{ episode.title }}</h3>
                 <details>
                     <summary>Description</summary>
                         <p>{{ episode.description|safe }}</p>
                 </details>
-            </p>
                 <span class="badge badge-primary">{{ episode.published }}</span><br>
-            <audio controls><source src="{{ episode.enclosure.get('url') }}" type="audio/mpeg"></audio>
+            <audio controls>
+                <source src="{{ episode.enclosure.url }}" type="{{ episode.enclosure.type }}">
+            </audio>
         </div>
     {% endfor %}
 {% endblock %}

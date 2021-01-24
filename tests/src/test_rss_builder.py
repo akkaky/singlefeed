@@ -1,6 +1,7 @@
+from datetime import datetime, timezone
 from unittest import TestCase
 
-from src.container import Episode, Feed
+from src.container import Enclosure, Episode, Feed, Source
 from src.rss_builder import create_rss
 
 
@@ -13,18 +14,18 @@ class CreateRssTestCase(TestCase):
             b'com/dtds/podcast-1.0.dtd">\n  <channel>\n    <title>Feed title</'
             b'title>\n    <link>Feed link</link>\n    <itunes:explicit>no</it'
             b'unes:explicit>\n    <description>feed description</description>'
-            b'\n    <last_build_date>Thu, 24 Dec 2022 22:58:27 +0000</last_bu'
-            b'ild_date>\n    <itunes:image href="Feed image"/>\n    <itunes:a'
-            b'uthor>singlefeed</itunes:author>\n    <item>\n      <title>Title'
-            b' 1</title>\n      <enclosure length="26229027" type="audio/mpeg"'
-            b' url="https://example.com/1.mp3"/>\n      <link>https://example.'
-            b'com/episode</link>\n      <guid>https://example.com/episode</gu'
-            b'id>\n      <pubDate>Thu, 24 Dec 2020 22:58:27 +0000</pubDate>\n '
-            b'     <description>Item description</description>\n      <itunes:'
-            b'duration>27:20</itunes:duration>\n      <itunes:explicit>no</itu'
-            b'nes:explicit>\n      <itunes:image href="https://example.com/_30'
-            b'00px.jpg"/>\n      <author>Feed\'s author</author>\n    </item>'
-            b'\n  </channel>\n</rss>\n'
+            b'\n    <last_build_date>Sat, 24 Dec 2022 22:58:27 +0000</last_bu'
+            b'ild_date>\n    <itunes:image href="http://image.jpg"/>\n    '
+            b'<itunes:author>singlefeed</itunes:author>\n    <item>\n      '
+            b'<title>Title 1</title>\n      <enclosure length="26229027" '
+            b'type="audio/mpeg" url="https://example.com/1.mp3"/>\n      '
+            b'<link>https://example.com/episode</link>\n      <guid>https://'
+            b'example.com/episode</guid>\n      <pubDate>Sat, 24 Dec 2022 '
+            b'22:58:27 +0000</pubDate>\n      <description>Item description'
+            b'</description>\n      <itunes:duration>27:20</itunes:duration>\n'
+            b'      <itunes:explicit>no</itunes:explicit>\n      <itunes:image'
+            b' href="https://example.com/_3000px.jpg"/>\n      <author>Feed\'s'
+            b' author</author>\n    </item>\n  </channel>\n</rss>\n'
         )
         feed = Feed(
             name='Feed name',
@@ -33,18 +34,22 @@ class CreateRssTestCase(TestCase):
             language='ru',
             description='feed description',
             image='Feed image',
-            sources='source1, source2',
-            last_build_date='Thu, 24 Dec 2022 22:58:27 +0000',
+            sources=[Source('source1'), Source('source2')],
+            last_build_date=datetime(
+                2022, 12, 24, 22, 58, 27, tzinfo=timezone.utc
+            ),
             episodes=[
                 Episode(
                     title='Title 1',
-                    enclosure={
-                        'length': '26229027',
-                        'type': 'audio/mpeg',
-                        'url': 'https://example.com/1.mp3'
-                    },
+                    enclosure=Enclosure(
+                        length='26229027',
+                        type='audio/mpeg',
+                        url='https://example.com/1.mp3'
+                    ),
                     link='https://example.com/episode',
-                    published='Thu, 24 Dec 2020 22:58:27 +0000',
+                    published=datetime(
+                        2022, 12, 24, 22, 58, 27, tzinfo=timezone.utc
+                    ),
                     description='Item description',
                     duration='27:20',
                     image='https://example.com/_3000px.jpg',
@@ -52,4 +57,5 @@ class CreateRssTestCase(TestCase):
                     ),
             ],
         )
-        self.assertEqual(expected_string, create_rss(feed))
+        url_for_feed_image = 'http://image.jpg'
+        self.assertEqual(expected_string, create_rss(feed, url_for_feed_image))
