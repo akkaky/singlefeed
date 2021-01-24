@@ -26,5 +26,5 @@ Execute `docker-compose up` in command line.
 - Access to list of episodes at: `http://your_adress.com/`
 - Access to feed at: `http://your_adress.com/{your_feed_name}`
 
-##PS
+## PS
 This is my first project ever. I have been learning Python and programming in general since November 2020.
