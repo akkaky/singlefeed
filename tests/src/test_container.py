@@ -4,30 +4,30 @@ from src.container import Episode, Feed, get_container_attrs_keys
 
 
 episode = Episode(
-                    title='Title 1',
-                    enclosure={
-                        'length': '26229027',
-                        'type': 'audio/mpeg',
-                        'url': 'https://example.com/1.mp3'
-                    },
-                    link='https://example.com/episode',
-                    published='Thu, 24 Dec 2020 22:58:27 +0000',
-                    description='Item description',
-                    duration='27:20',
-                    image='https://example.com/_3000px.jpg',
-                    author="Feed's author",
-                    )
+    title='Title 1',
+    enclosure={
+        'length': '26229027',
+        'type': 'audio/mpeg',
+        'url': 'https://example.com/1.mp3'
+    },
+    link='https://example.com/episode',
+    published='Thu, 24 Dec 2020 22:58:27 +0000',
+    description='Item description',
+    duration='27:20',
+    image='https://example.com/_3000px.jpg',
+    author="Feed's author",
+)
 feed = Feed(
-            name='Feed name',
-            title='Feed title',
-            link='Feed link',
-            language='language',
-            description='Feed description',
-            image='Feed image',
-            sources='source1, source2',
-            last_build_date='Thu, 24 Dec 2022 22:58:27 +0000',
-            episodes=[episode],
-        )
+    name='Feed name',
+    title='Feed title',
+    link='Feed link',
+    language='language',
+    description='Feed description',
+    image='Feed image',
+    last_build_date='Thu, 24 Dec 2022 22:58:27 +0000',
+    sources=['source1', 'source2'],
+    episodes=[episode],
+)
 
 
 class EpisodeTestCase(TestCase):
@@ -56,7 +56,6 @@ class FeedTestCase(TestCase):
             'language',
             'Feed description',
             'Feed image',
-            'source1, source2',
             'Thu, 24 Dec 2022 22:58:27 +0000',
         ]
         self.assertListEqual(expected_tesult, list(feed.get_attrs_values()))
@@ -66,7 +65,7 @@ class GetContainerAttrsKeysTestCase(TestCase):
 
     def test__feed_class(self):
         expected_data = (
-            'name, title, link, language, description, image, sources, '
+            'name, title, link, language, description, image, '
             'last_build_date'
         )
         self.assertEqual(expected_data, get_container_attrs_keys('Feed'))

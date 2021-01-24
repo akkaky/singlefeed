@@ -17,6 +17,7 @@ from src.rss_builder import create_rss
 from src import storage
 
 
+default_settings = {'timeout': '60'}
 logging.basicConfig(
     level=logging.INFO,
     format='[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s',
@@ -27,30 +28,28 @@ logger = logging.getLogger(__name__)
 def get_config() -> dict:
     try:
         with open('config.yaml') as s:
-            return yaml.load(s, Loader=yaml.BaseLoader).values()
+            return yaml.load(s, Loader=yaml.BaseLoader)
     except FileNotFoundError as e:
         logger.error(e)
         sys.exit()
 
 
-def get_feed_attr_values(feed: dict) -> tuple[str, str, str, str, str, str]:
-    title = feed.get('title')
-    link = feed.get('link')
-    language = feed.get('language')
-    description = feed.get('description')
-    image = feed.get('image')
-    sources = ', '.join(feed.get('sources'))
-    return title, link, language, description, image, sources
-
-
 def create_feeds(feeds: dict) -> list[Feed]:
     feeds_list = []
     for name, feed in feeds.items():
-        feed = Feed(name, *get_feed_attr_values(feed))
+        feed = Feed(
+            name=name,
+            title=feed.get('title'),
+            link=feed.get('link'),
+            language=feed.get('language'),
+            description=feed.get('description'),
+            image=feed.get('image'),
+            sources=feed.get('sources'),
+        )
         if feed:
             logger.info(f'"{feed.name}" feed created.')
         else:
-            logger.critical(f"Can't to create {name} feed")
+            logger.error(f"Can't to create {name} feed")
         feeds_list.append(feed)
     return feeds_list
 
@@ -63,7 +62,7 @@ def sort_episodes(feed: Feed):
         )
 
 
-def add_new_episodes(feed: Feed, rss_: str) -> list:
+def add_new_episodes(feed: Feed, rss_: str) -> list[Episode]:
     episodes = (Episode(**episode) for episode in parser.get_episodes(rss_))
     return [episode for episode in episodes if episode not in feed.episodes]
 
@@ -71,7 +70,7 @@ def add_new_episodes(feed: Feed, rss_: str) -> list:
 def check_update(feed: Feed):
     new_episodes = []
     logger.info(f'"{feed.name}" check updates...')
-    for url in feed.sources.split(', '):
+    for url in feed.sources:
         rss_str = requests.get(url).text
         new_episodes.extend(add_new_episodes(feed, rss_str))
     if new_episodes:
@@ -89,15 +88,20 @@ def update_feeds():
 
 
 def init() -> dict:
-    feeds, settings = get_config()
-    if feeds and settings:
+    config = get_config()
+    try:
+        feeds = config['feeds']
         logger.info('"config.yaml" loaded.')
-        feeds = create_feeds(feeds)
-        storage.create()
-        for feed in feeds:
-            storage.add_feed(feed)
-            check_update(feed)
-        return settings
+    except KeyError as e:
+        logger.error(f'"config.yaml" is incorrect. Fill block {e} correctly.')
+        sys.exit()
+    settings = config.setdefault('settings', default_settings)
+    feeds = create_feeds(feeds)
+    storage.create()
+    for feed in feeds:
+        storage.add_feed(feed)
+        check_update(feed)
+    return settings
 
 
 def main():
@@ -105,7 +109,7 @@ def main():
     scheduler = BackgroundScheduler()
     scheduler.start()
     scheduler.add_job(
-        update_feeds, trigger="interval", seconds=int(settings.get('timeout'))
+        update_feeds, trigger="interval", seconds=int(settings['timeout'])
     )
     return Flask(__name__)
 
