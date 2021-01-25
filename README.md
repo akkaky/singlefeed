@@ -11,9 +11,9 @@ Run `git clone https://github.com/akkaky/singlefeed.git` in command line on your
 
 - Put images for each feed to `image` folder. 
 
-- Set up `config.yaml` in the app root directory to create your feeds. 
-  The subblock names of the `feeds` block are using in your feed URL. 
-  In the `image` field of each feed enter a filename for the image, not path to file.
+- Set up `config.yaml` in the app root directory to create your feeds.<br>
+The subblock names of the `feeds` block are using in your feed URL.<br>
+In the `image` field of each feed enter a filename for the image, not path to file.
 
 ## Run
 Execute `docker-compose up` in command line.
