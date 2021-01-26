@@ -1,12 +1,25 @@
-feeds:
-  name_of_feed: # Will use in URl. http://yourserver.com/name_of_feed
-    title: Example title
-    language: "en"
-    description: Describe your feed
-    image: image.jpg # The name of the image file placed in the /image directory
-    sources:
-      - http://podcast1.com/rss
-      - https://podcast2.com/podcast.rss
+#feeds:
+#  name_of_feed: # Will use in URl. http://yourserver.com/name_of_feed
+#    title: Example title
+#    language: "en"
+#    description: Describe your feed
+#    image: image.jpg # The name of the image file placed in the /image directory
+#    sources:
+#      - http://podcast1.com/rss
+#      - https://podcast2.com/podcast.rss
+#
+#settings:
+#  timeout: 60 # Time in seconds. How often to check for new episodes of podcasts
+#feeds:
+#  science:
+#    title: Научпоп
+#    language: "ru"
+#    description: Землекоп и арзамас
+#    image: science.jpg
+#    sources:
+#      - http://zemlekop.libsyn.com/rss
+#      - https://arzamas.academy/feed_v1/podcast.rss
+#      - https://echo.msk.ru/programs/napalcah/rss-audio.xml
 
 settings:
-  timeout: 60 # Time in seconds. How often to check for new episodes of podcasts
+  timeout: 20

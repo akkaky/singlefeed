@@ -17,6 +17,7 @@ from src.rss_builder import create_rss
 from src import storage
 
 
+default_settings = {'timeout': '60'}
 logging.basicConfig(
     level=logging.INFO,
     format='[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s',
@@ -27,7 +28,7 @@ logger = logging.getLogger(__name__)
 def get_config() -> dict:
     try:
         with open('config.yaml') as s:
-            return yaml.load(s, Loader=yaml.BaseLoader).values()
+            return yaml.load(s, Loader=yaml.BaseLoader)
     except FileNotFoundError as e:
         logger.error(e)
         sys.exit()
@@ -50,7 +51,7 @@ def create_feeds(feeds: dict) -> list[Feed]:
         if feed:
             logger.info(f'"{feed.name}" feed created.')
         else:
-            logger.critical(f"Can't to create {name} feed")
+            logger.error(f"Can't to create {name} feed")
         feeds_list.append(feed)
     return feeds_list
 
@@ -63,7 +64,7 @@ def sort_episodes(feed: Feed):
         )
 
 
-def add_new_episodes(feed: Feed, rss_: str) -> list:
+def add_new_episodes(feed: Feed, rss_: str) -> list[Episode]:
     episodes = (Episode(**episode) for episode in parser.get_episodes(rss_))
     return [episode for episode in episodes if episode not in feed.episodes]
 
@@ -89,7 +90,13 @@ def update_feeds():
 
 
 def init() -> dict:
-    feeds, settings = get_config()
+    config = get_config()
+    try:
+        feeds = config['feeds']
+    except KeyError as e:
+        logger.error(f'"config.yaml" is incorrect. Fill block {e} correctly.')
+        sys.exit()
+    settings = config.setdefault('settings', default_settings)
     if feeds and settings:
         logger.info('"config.yaml" loaded.')
         feeds = create_feeds(feeds)
@@ -105,7 +112,7 @@ def main():
     scheduler = BackgroundScheduler()
     scheduler.start()
     scheduler.add_job(
-        update_feeds, trigger="interval", seconds=int(settings.get('timeout'))
+        update_feeds, trigger="interval", seconds=int(settings['timeout'])
     )
     return Flask(__name__)
 
