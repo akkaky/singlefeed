@@ -29,20 +29,20 @@ class Feed:
     language: str
     description: str
     image: str
-    sources: str
     last_build_date: str = None
+    sources: list = field(default_factory=list)
     episodes: list[Episode] = field(default_factory=list)
 
     def get_attrs_values(self):
         return (
             self.__getattribute__(attr) for attr in self.__dict__
-            if attr != 'episodes'
+            if attr not in ('sources', 'episodes')
         )
 
 
 def get_container_attrs_keys(dataclass_name: str) -> str:
     if dataclass_name == 'Feed':
-        return ', '.join(list(Feed.__dict__['__dataclass_fields__'])[:-1])
+        return ', '.join(list(Feed.__dict__['__dataclass_fields__'])[:-2])
     if dataclass_name == 'Episode':
         return (
             f'feed_name, {", ".join(Episode.__dict__["__dataclass_fields__"])}'

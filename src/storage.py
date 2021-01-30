@@ -10,20 +10,20 @@ from .container import (
 
 
 logger = logging.getLogger(__name__)
-database = 'singlefeed.db'
+db_file = 'singlefeed.db'
 
 
 def create_connection():
     conn = None
     try:
-        conn = sqlite3.connect(database)
+        conn = sqlite3.connect(db_file)
     except sqlite3.Error as error:
         logger.error(error)
     return conn
 
 
 def drop_tables(conn):
-    for table_name in ('feeds', 'episodes'):
+    for table_name in ('feeds', 'episodes', 'sources'):
         conn.execute(f'DROP TABLE IF EXISTS {table_name}')
 
 
@@ -36,14 +36,22 @@ def create():
         conn.execute(
             f'CREATE TABLE episodes({get_container_attrs_keys("Episode")})'
         )
+        conn.execute(
+            f'CREATE TABLE sources(feed_name, url)'
+        )
 
 
 def add_feed(feed: Feed):
     with create_connection() as conn:
+        # print(tuple(feed.get_attrs_values()))
         conn.execute(
-            f'INSERT INTO feeds VALUES ({",".join("?" * 8)})',
-            (*feed.get_attrs_values(),),
+            f'INSERT INTO feeds VALUES ({",".join("?" * 7)})',
+            tuple(feed.get_attrs_values()),
         )
+        for source in feed.sources:
+            conn.execute(
+                'INSERT INTO sources VALUES(?, ?)', (feed.name, source,),
+            )
 
 
 def add_episodes(feed_name: str, episodes: list[Episode]):
@@ -55,6 +63,14 @@ def add_episodes(feed_name: str, episodes: list[Episode]):
             )
 
 
+def _get_sources(feed_name: str, conn: sqlite3.Connection) -> list[str]:
+    return [
+        str(*row) for row in conn.execute(
+            f'SELECT url FROM sources WHERE feed_name = "{feed_name}"'
+        )
+    ]
+
+
 def get_feeds(name=None) -> Union[Feed, None, list[Feed]]:
     with create_connection() as conn:
         if name:
@@ -64,12 +80,14 @@ def get_feeds(name=None) -> Union[Feed, None, list[Feed]]:
             if data:
                 feed = Feed(*data)
                 feed.episodes = get_episodes(feed.name, conn)
+                feed.sources = _get_sources(name, conn)
                 return feed
             logger.error(f"'{name}' does not exist in database")
             return None
         feeds = [Feed(*row) for row in conn.execute('SELECT * FROM feeds')]
         for feed in feeds:
             feed.episodes = get_episodes(feed.name, conn)
+            feed.sources = _get_sources(feed.name, conn)
         return feeds
 
 

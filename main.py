@@ -34,20 +34,18 @@ def get_config() -> dict:
         sys.exit()
 
 
-def get_feed_attr_values(feed: dict) -> tuple[str, str, str, str, str, str]:
-    title = feed.get('title')
-    link = feed.get('link')
-    language = feed.get('language')
-    description = feed.get('description')
-    image = feed.get('image')
-    sources = ', '.join(feed.get('sources'))
-    return title, link, language, description, image, sources
-
-
 def create_feeds(feeds: dict) -> list[Feed]:
     feeds_list = []
     for name, feed in feeds.items():
-        feed = Feed(name, *get_feed_attr_values(feed))
+        feed = Feed(
+            name=name,
+            title=feed.get('title'),
+            link=feed.get('link'),
+            language=feed.get('language'),
+            description=feed.get('description'),
+            image=feed.get('image'),
+            sources=feed.get('sources'),
+        )
         if feed:
             logger.info(f'"{feed.name}" feed created.')
         else:
@@ -72,7 +70,7 @@ def add_new_episodes(feed: Feed, rss_: str) -> list[Episode]:
 def check_update(feed: Feed):
     new_episodes = []
     logger.info(f'"{feed.name}" check updates...')
-    for url in feed.sources.split(', '):
+    for url in feed.sources:
         rss_str = requests.get(url).text
         new_episodes.extend(add_new_episodes(feed, rss_str))
     if new_episodes:
@@ -93,18 +91,17 @@ def init() -> dict:
     config = get_config()
     try:
         feeds = config['feeds']
+        logger.info('"config.yaml" loaded.')
     except KeyError as e:
         logger.error(f'"config.yaml" is incorrect. Fill block {e} correctly.')
         sys.exit()
     settings = config.setdefault('settings', default_settings)
-    if feeds and settings:
-        logger.info('"config.yaml" loaded.')
-        feeds = create_feeds(feeds)
-        storage.create()
-        for feed in feeds:
-            storage.add_feed(feed)
-            check_update(feed)
-        return settings
+    feeds = create_feeds(feeds)
+    storage.create()
+    for feed in feeds:
+        storage.add_feed(feed)
+        check_update(feed)
+    return settings
 
 
 def main():

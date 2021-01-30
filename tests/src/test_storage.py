@@ -12,12 +12,13 @@ from src.storage import (
 
 create_feeds_table_string = (
     'CREATE TABLE feeds(name, title, link, language, description, image, '
-    'sources, last_build_date)'
+    'last_build_date)'
 )
 create_episodes_table_string = (
     'CREATE TABLE episodes(feed_name, title, enclosure, link, published, '
     'description, duration, image, author)'
 )
+create_sources_table_string = 'CREATE TABLE sources(feed_name, url)'
 select_tables_names = 'SELECT name FROM sqlite_master WHERE type="table"'
 episode = Episode(
     title='Title 1',
@@ -40,8 +41,8 @@ feed = Feed(
     language='ru',
     description='feed description',
     image='Feed image',
-    sources='source1, source2',
     last_build_date='Thu, 24 Dec 2022 22:58:27 +0000',
+    sources=['source1', 'source2'],
     episodes=[episode],
 )
 
@@ -56,6 +57,7 @@ class DropTablesTestCase(TestCase):
         )
         self.conn.execute(create_feeds_table_string)
         self.conn.execute(create_episodes_table_string)
+        self.conn.execute(create_sources_table_string)
 
     def tearDown(self) -> None:
         self.conn.close()
@@ -87,7 +89,7 @@ class CreateTestCase(TestCase):
     def test(self):
         create()
         self.assertListEqual(
-            ['feeds', 'episodes'],
+            ['feeds', 'episodes', 'sources'],
             [
                 str(*table) for table in self.conn.execute(
                     select_tables_names
@@ -137,6 +139,7 @@ class AddFeedTestCase(TestCase):
             return_value=self.conn
         )
         self.conn.execute(create_feeds_table_string)
+        self.conn.execute(create_sources_table_string)
 
     def tearDown(self):
         self.conn.close()
@@ -146,7 +149,7 @@ class AddFeedTestCase(TestCase):
         expected_result = [
             (
                 'Feed name', 'Feed title', 'Feed link', 'ru',
-                'feed description', 'Feed image', 'source1, source2',
+                'feed description', 'Feed image',
                 'Thu, 24 Dec 2022 22:58:27 +0000',
             )
         ]
@@ -195,11 +198,12 @@ class GetFeedsTestCase(TestCase):
         )
         self.conn.execute(create_feeds_table_string)
         self.conn.execute(create_episodes_table_string)
+        self.conn.execute(create_sources_table_string)
         self.conn.execute(
-            f'INSERT INTO feeds VALUES ({",".join("?" * 8)})',
+            f'INSERT INTO feeds VALUES ({",".join("?" * 7)})',
             (
                 'Feed name', 'Feed title', 'Feed link', 'ru',
-                'feed description', 'Feed image', 'source1, source2',
+                'feed description', 'Feed image',
                 'Thu, 24 Dec 2022 22:58:27 +0000',
             ),
         )
@@ -215,6 +219,10 @@ class GetFeedsTestCase(TestCase):
                 "Feed's author",
             ),
         )
+        for source in feed.sources:
+            self.conn.execute(
+                'INSERT INTO sources VALUES(?, ?)', ('Feed name', source,),
+            )
 
     def tearDown(self):
         self.conn.close()
