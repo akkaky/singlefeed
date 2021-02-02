@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/github/akkaky/singlefeed/badge.svg?branch=main)](https://coveralls.io/github/akkaky/singlefeed?branch=main)
+
 ## Singlefeed
 Make your unique podcast RSS feed from several feeds and publish it. It is possible to use podcast clients.
 
