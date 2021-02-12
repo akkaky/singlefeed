@@ -164,7 +164,6 @@ def rss(feed_name):
                 url_for('image_folder', filename=feed.image),
             ),
         )
-    print(url_for_feed_image)
     return Response(create_rss(feed, url_for_feed_image), mimetype='text/xml')
 
 
