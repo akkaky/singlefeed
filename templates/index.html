@@ -1,14 +1,20 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    {% for feed in feeds %}
-        <div>
-            <img src="{{ url_for('image_folder', filename=feed.image) }}"
-                 width="60" height="60" alt="{{ feed.title }}"/>
+{% for feed in feeds %}
+<div class="row my-4 align-items-center">
+    <div class="col-2">
+        <img class="w-100"
+             src="{{ url_for('image_folder', filename=feed.image) }}"
+             alt="{{ feed.title }}"/>
+    </div>
+    <div class="col-10">
+        <h2>
             <a href="{{ url_for('feed_page', feed_name=feed.name) }}">
                 {{ feed.title }}
             </a>
-            <br>
-        </div>
-    {% endfor %}
+        </h2>
+    </div>
+</div>
+{% endfor %}
 {% endblock %}
